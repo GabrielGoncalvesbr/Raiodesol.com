@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#233e32">
+    <meta name="description" content="Conheça o Sítio Raio de Sol em Salesópolis: piscina, churrasqueira e natureza para momentos especiais.">
+    <title>Sítio Raio de Sol · Salesópolis</title>
+    <link rel="stylesheet" href="style.css">
+    <script defer src="script.js">
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+    <header class="header">
+      <div class="container header-inner">
+        <a class="brand" href="#inicio" aria-label="Sítio Raio de Sol — início">
+          <span class="sun" aria-hidden="true">☀</span>
+          <span>
+            <strong>RAIO DE SOL</strong>
+            <small>SÍTIO · SALESÓPOLIS</small>
+          </span>
+        </a>
+        <button class="menu-button" type="button" aria-controls="navigation" aria-expanded="false" aria-label="Abrir menu">☰</button>
+        <nav id="navigation" aria-label="Navegação principal">
+          <a href="#inicio" data-nav="inicio">Início</a>
+          <a href="#sitio" data-nav="sitio">Conhecer o sítio</a>
+          <a href="#login" data-nav="login" id="nav-login">Entrar</a>
+          <a class="button small" href="#cadastro" data-nav="cadastro" id="nav-register">Criar conta <span aria-hidden="true">↗</span>
+        </a>
+        <span id="account" hidden>
+          <span id="account-name">
+          </span>
+          <button class="text-button" id="logout" type="button">Sair</button>
+        </span>
+      </nav>
+    </div>
+  </header>
+  <main id="conteudo" tabindex="-1">
+    <p class="preview-notice">Projeto acadêmico: use dados fictícios. Os cadastros são de demonstração e se apagam ao recarregar ou fechar a página.</p>
+    <section data-view="inicio">
+      <div class="hero">
+        <img class="hero-image" src="assets/piscina.jpg" alt="Piscina do sítio com vista para as montanhas e a natureza de Salesópolis" fetchpriority="high">
+        <div class="container hero-content">
+          <span class="eyebrow light">NATUREZA, DESCANSO E BONS MOMENTOS</span>
+          <h1>Seu lugar ao sol.<br>Seu tempo de paz.</h1>
+          <p>Desacelere e aproveite a companhia de quem importa.<br>Conheça o Sítio Raio de Sol, em Salesópolis.</p>
+          <div class="actions">
+            <a class="button gold" href="#sitio">Conhecer o sítio <span aria-hidden="true">↗</span>
+          </a>
+          <a class="button translucent" href="#cadastro">Criar minha conta</a>
+        </div>
+        <span class="hero-location">⌖ &nbsp; Salesópolis · São Paulo</span>
+      </div>
+      <span class="photo-label">UM RESPIRO EM MEIO À NATUREZA</span>
+    </div>
+    <div class="amenity-strip container">
+      <span>≈ &nbsp; Piscina ao ar livre</span>
+      <span>♧ &nbsp; Muito verde ao redor</span>
+      <span>⌂ &nbsp; Espaço para reunir</span>
+      <span>☀ &nbsp; Momentos em família</span>
+    </div>
+    <section class="section container">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">VIVA O LADO LEVE DA VIDA</span>
+          <h2>Um espaço. Muitas memórias.</h2>
+        </div>
+        <p>Do mergulho na piscina ao almoço em família,<br>cada cantinho convida a aproveitar.</p>
+      </div>
+      <div class="feature-grid">
+        <a class="photo-card" href="#sitio">
+          <img src="assets/churrasqueira.jpg" alt="Churrasqueiras de tijolos e mesas na área coberta" loading="lazy">
+          <div>
+            <span>À MESA, JUNTOS</span>
+            <h3>Encontros com sabor de casa</h3>
+            <span class="card-arrow" aria-hidden="true">↗</span>
+          </div>
+        </a>
+        <a class="photo-card" href="#sitio">
+          <img src="assets/area-verde.jpg" alt="Gramado amplo cercado por árvores" loading="lazy">
+          <div>
+            <span>PERTINHO DA NATUREZA</span>
+            <h3>Espaço para desacelerar</h3>
+            <span class="card-arrow" aria-hidden="true">↗</span>
+          </div>
+        </a>
+        <a class="photo-card" href="#sitio">
+          <img src="assets/playground.jpg" alt="Playground de madeira com balanços e escorregador" loading="lazy">
+          <div>
+            <span>ALEGRIA AO AR LIVRE</span>
+            <h3>Pequenos grandes momentos</h3>
+            <span class="card-arrow" aria-hidden="true">↗</span>
+          </div>
+        </a>
+      </div>
+    </section>
+    <section class="callout">
+      <div class="container callout-inner">
+        <div>
+          <span class="eyebrow">COMECE POR AQUI</span>
+          <h2>Faça parte dos próximos bons momentos.</h2>
+          <p>Crie sua conta e fique pronto para acessar o Raio de Sol.</p>
+        </div>
+        <a class="button" href="#cadastro">Criar minha conta <span aria-hidden="true">↗</span>
+      </a>
+    </div>
+  </section>
+</section>
+<section data-view="sitio" hidden>
+  <div class="container page-intro">
+    <span class="eyebrow">UM POUCO DO NOSSO CANTINHO</span>
+    <h1>Conheça o Sítio Raio de Sol.</h1>
+    <p>Piscina, natureza e espaço para estar junto.<br>Um convite para viver dias mais leves em Salesópolis, São Paulo.</p>
+  </div>
+  <div class="gallery container">
+    <figure class="gallery-main">
+      <img src="assets/piscina-casa.jpg" alt="Vista da piscina e das construções do sítio">
+      <figcaption>Piscina e espaço de convivência</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/churrasqueira.jpg" alt="Área coberta com churrasqueira e mesas">
+      <figcaption>Churrasqueira</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/area-verde.jpg" alt="Área verde e paisagem do sítio">
+      <figcaption>Natureza ao redor</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/playground.jpg" alt="Playground no gramado">
+      <figcaption>Playground</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/piscina.jpg" alt="Piscina ao ar livre com vista para montanhas">
+      <figcaption>Piscina ao ar livre</figcaption>
+    </figure>
+  </div>
+  <section class="section container about">
+    <div>
+      <span class="eyebrow">ESPAÇO PARA APROVEITAR</span>
+      <h2>O cenário dos seus<br>melhores encontros.</h2>
+      <p>O Sítio Raio de Sol reúne piscina ao ar livre, área coberta com churrasqueira, playground e um amplo gramado. Um espaço para aproveitar a natureza e compartilhar momentos com a família e os amigos.</p>
+    </div>
+    <div class="amenities">
+      <article>
+        <span aria-hidden="true">≈</span>
+        <h3>Piscina</h3>
+        <p>Um mergulho com vista para o verde.</p>
+      </article>
+      <article>
+        <span aria-hidden="true">⌂</span>
+        <h3>Churrasqueira</h3>
+        <p>Área coberta para refeições e encontros.</p>
+      </article>
+      <article>
+        <span aria-hidden="true">♧</span>
+        <h3>Área verde</h3>
+        <p>Gramado e contato com a natureza.</p>
+      </article>
+      <article>
+        <span aria-hidden="true">☀</span>
+        <h3>Playground</h3>
+        <p>Um cantinho de diversão ao ar livre.</p>
+      </article>
+    </div>
+  </section>
+  <section class="location-section">
+    <div class="container location-grid">
+      <div>
+        <span class="eyebrow">ENCONTRE NOSSO CANTINHO</span>
+        <h2>Em Salesópolis,<br>pertinho da natureza.</h2>
+        <p>Sítio Raio de Sol · Salesópolis, SP</p>
+        <p class="muted">Veja a localização do sítio e planeje seu caminho.</p>
+        <a class="button" href="https://maps.app.goo.gl/wYcGWbgJDmuhAwLX8" target="_blank" rel="noopener noreferrer">Abrir no Google Maps ↗</a>
+      </div>
+      <iframe title="Localização do Sítio Raio de Sol em Salesópolis no Google Maps" src="https://www.google.com/maps?q=-23.5345753,-45.971298&amp;z=16&amp;output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+    </div>
+  </section>
+  <section class="section container social-section">
+    <div>
+      <span class="eyebrow">ACOMPANHE O RAIO DE SOL</span>
+      <h2>Mais do sítio, nas nossas redes.</h2>
+    </div>
+    <div class="actions">
+      <a class="button outline" href="https://www.facebook.com/sitioraiodesolsalesopolis" target="_blank" rel="noopener noreferrer">Facebook ↗</a>
+      <a class="button outline" href="https://www.instagram.com/sitio.raio.de.sol.salesopolis/" target="_blank" rel="noopener noreferrer">Instagram ↗</a>
+    </div>
+  </section>
+</section>
+<section data-view="cadastro" hidden>
+  <div class="auth-layout container">
+    <aside class="auth-image register-image">
+      <img src="assets/area-verde.jpg" alt="Gramado e árvores do Sítio Raio de Sol">
+      <div>
+        <span class="eyebrow light">SEU PRÓXIMO BOM MOMENTO</span>
+        <h2>Começa com <br>um raio de sol.</h2>
+        <p>Natureza, encontros e lembranças para guardar.</p>
+        <span>Salesópolis · SP</span>
+      </div>
+    </aside>
+    <div class="auth-panel">
+      <a class="back-link" href="#inicio">← Voltar ao início</a>
+      <span class="eyebrow">BEM-VINDO AO RAIO DE SOL</span>
+      <h1>Crie sua conta.</h1>
+      <p class="muted">Preencha seus dados. O cadastro é para maiores de 18 anos.</p>
+      <form id="register-form" novalidate>
+        <div class="form-grid">
+          <div class="field full">
+            <label for="name">Nome completo</label>
+            <input id="name" name="name" autocomplete="name" maxlength="120" placeholder="Como você se chama?" required aria-describedby="name-error">
+            <small id="name-error" class="field-error">
+            </small>
+          </div>
+          <div class="field">
+            <label for="phone">Número de telefone</label>
+            <input id="phone" name="phone" type="tel" autocomplete="tel-national" inputmode="tel" maxlength="15" placeholder="(11) 99999-9999" required aria-describedby="phone-error">
+            <small id="phone-error" class="field-error">
+            </small>
+          </div>
+          <div class="field">
+            <label for="cpf">CPF</label>
+            <input id="cpf" name="cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required aria-describedby="cpf-error">
+            <small id="cpf-error" class="field-error">
+            </small>
+          </div>
+          <div class="field full">
+            <label for="email">E-mail</label>
+            <input id="email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="voce@exemplo.com" required aria-describedby="email-error">
+            <small id="email-error" class="field-error">
+            </small>
+          </div>
+          <div class="field full">
+            <label for="birth">Data de nascimento</label>
+            <input id="birth" name="birth" type="date" autocomplete="bday" min="1900-01-01" required aria-describedby="birth-error">
+            <small id="birth-error" class="field-error">
+            </small>
+          </div>
+          <div class="field full">
+            <label for="password">Senha</label>
+            <div class="password-wrap">
+              <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="30" placeholder="Crie uma senha segura" required aria-describedby="password-rules password-error">
+              <button type="button" class="password-toggle" data-password="password" aria-label="Mostrar senha" aria-pressed="false">Mostrar</button>
+            </div>
+            <ul id="password-rules" class="password-rules">
+              <li data-rule="length">De 8 a 30 caracteres</li>
+              <li data-rule="upper">Uma letra maiúscula</li>
+              <li data-rule="lower">Uma letra minúscula</li>
+              <li data-rule="special">Um caractere especial</li>
+            </ul>
+            <small id="password-error" class="field-error">
+            </small>
+          </div>
+        </div>
+        <p class="form-message" id="register-message" role="alert" tabindex="-1">
+        </p>
+        <button class="button full-width" type="submit">Criar minha conta <span aria-hidden="true">↗</span>
+      </button>
+      <p class="auth-foot">Já tem uma conta? <a href="#login">Entrar</a>
+    </p>
+  </form>
+</div>
+</div>
+</section>
+<section data-view="login" hidden>
+  <div class="auth-layout container login-layout">
+    <aside class="auth-image">
+      <img src="assets/piscina-casa.jpg" alt="Piscina e casa do Sítio Raio de Sol">
+      <div>
+        <span class="eyebrow light">BOM TER VOCÊ POR AQUI</span>
+        <h2>Um lugar para <br>se sentir bem.</h2>
+        <p>Seus bons momentos começam aqui.</p>
+        <span>Salesópolis · SP</span>
+      </div>
+    </aside>
+    <div class="auth-panel">
+      <a class="back-link" href="#inicio">← Voltar ao início</a>
+      <span class="eyebrow">SEU CANTINHO NO RAIO DE SOL</span>
+      <h1>Bem-vindo de volta.</h1>
+      <p class="muted">Entre com o e-mail e a senha do seu cadastro.</p>
+      <form id="login-form">
+        <div class="field">
+          <label for="login-email">E-mail</label>
+          <input id="login-email" name="email" type="email" autocomplete="username" maxlength="254" placeholder="voce@exemplo.com" required>
+        </div>
+        <div class="field">
+          <label for="login-password">Senha</label>
+          <div class="password-wrap">
+            <input id="login-password" name="password" type="password" autocomplete="current-password" maxlength="30" placeholder="Sua senha" required>
+            <button type="button" class="password-toggle" data-password="login-password" aria-label="Mostrar senha" aria-pressed="false">Mostrar</button>
+          </div>
+        </div>
+        <p class="form-message" id="login-message" role="alert" tabindex="-1">
+        </p>
+        <button class="button full-width" type="submit">Entrar na minha conta <span aria-hidden="true">↗</span>
+      </button>
+      <p class="auth-foot">Ainda não tem conta? <a href="#cadastro">Criar conta</a>
+    </p>
+  </form>
+</div>
+</div>
+</section>
+</main>
+<footer class="footer">
+  <div class="container footer-inner">
+    <a class="brand" href="#inicio">
+      <span class="sun" aria-hidden="true">☀</span>
+      <span>
+        <strong>RAIO DE SOL</strong>
+        <small>SEU LUGAR AO SOL.</small>
+      </span>
+    </a>
+    <span>Salesópolis · São Paulo</span>
+    <div>
+      <a href="https://www.facebook.com/sitioraiodesolsalesopolis" target="_blank" rel="noopener noreferrer">Facebook ↗</a>
+      <a href="https://www.instagram.com/sitio.raio.de.sol.salesopolis/" target="_blank" rel="noopener noreferrer">Instagram ↗</a>
+    </div>
+  </div>
+</footer>
+<div id="toast" class="toast" role="status" hidden>
+</div>
+</body>
+</html>
