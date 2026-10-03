@@ -4,6 +4,8 @@ Site desenvolvido com **HTML, CSS e JavaScript básico**, sem frameworks, servid
 
 ## Como abrir
 
+[Clique aqui!](https://gabrielgoncalvesbr.github.io/Raiodesol.com/)
+
 Abra `index.html` com dois cliques no navegador. Mantenha `style.css`, `script.js` e a pasta `assets` junto ao HTML. Não precisa instalar Node.js ou executar comandos.
 
 ## Organização
