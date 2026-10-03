@@ -6,14 +6,6 @@ Site desenvolvido com **HTML, CSS e JavaScript básico**, sem frameworks, servid
 
 **[ Clique aqui para abrir o Sítio Raio de Sol](https://gabrielgoncalvesbr.github.io/Raiodesol.com/)**
 
-O site abre diretamente no navegador, sem baixar arquivos ou instalar programas.
-
-> Publicação no GitHub Pages em configuração. O link ficará disponível após a ativação.
-
-## Como abrir
-
-Abra `index.html` com dois cliques no navegador. Mantenha `style.css`, `script.js` e a pasta `assets` junto ao HTML. Não precisa instalar Node.js ou executar comandos.
-
 ## Organização
 
 - `index.html`: estrutura e conteúdo das quatro telas (início, cadastro, conhecer o sítio e login).
@@ -30,16 +22,5 @@ O formulário solicita nome, telefone com DDD, e-mail, CPF, nascimento e senha. 
 Os cadastros ficam em um array JavaScript na memória da página. O login compara o e-mail e a senha digitados com esse array. Não há banco de dados, cookies, localStorage ou chamadas de API.
 
 **Use dados fictícios e uma senha de teste.** Esta é uma simulação para apresentação acadêmica, não autenticação para uso real. Recarregar ou fechar a página apaga todos os cadastros. Para demonstrar:
-
-1. Abra `index.html` e clique em **Criar conta**.
-2. Preencha o formulário com dados fictícios válidos.
-3. Após cadastrar, use o mesmo e-mail e senha na tela de login, sem recarregar a página.
-4. Confira a saudação no menu e clique em **Sair**.
-
-É possível navegar e sair/entrar novamente sem perder os cadastros, desde que a página não seja recarregada.
-
-## Fotos e localização
-
-A página do sítio apresenta as cinco fotos fornecidas, informações sobre o espaço, mapa da localização enviada e links do Facebook e Instagram. O mapa e as redes sociais precisam de internet; os demais recursos funcionam localmente.
 
 Criação e desenvolvimento do site pelo grupo da faculdade.
