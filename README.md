@@ -4,15 +4,13 @@ Site desenvolvido com **HTML, CSS e JavaScript básico**, sem frameworks, servid
 
 ## Acessar o site
 
-**[☀️ Clique aqui para abrir o Sítio Raio de Sol](https://gabrielgoncalvesbr.github.io/Raiodesol.com/)**
+**[ Clique aqui para abrir o Sítio Raio de Sol](https://gabrielgoncalvesbr.github.io/Raiodesol.com/)**
 
 O site abre diretamente no navegador, sem baixar arquivos ou instalar programas.
 
 > Publicação no GitHub Pages em configuração. O link ficará disponível após a ativação.
 
 ## Como abrir
-
-[Clique aqui!](https://gabrielgoncalvesbr.github.io/Raiodesol.com/)
 
 Abra `index.html` com dois cliques no navegador. Mantenha `style.css`, `script.js` e a pasta `assets` junto ao HTML. Não precisa instalar Node.js ou executar comandos.
 
