@@ -7,8 +7,10 @@
     <meta name="description" content="Conheça o Sítio Raio de Sol em Salesópolis: piscina, churrasqueira e natureza para momentos especiais.">
     <title>Sítio Raio de Sol · Salesópolis</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="sprint2.css">
     <script defer src="script.js">
     </script>
+    <script defer src="sprint2.js"></script>
   </head>
   <body>
     <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
@@ -25,6 +27,9 @@
         <nav id="navigation" aria-label="Navegação principal">
           <a href="#inicio" data-nav="inicio">Início</a>
           <a href="#sitio" data-nav="sitio">Conhecer o sítio</a>
+          <a href="#disponibilidade" data-nav="disponibilidade">Alugar o sítio</a>
+          <a href="#historico" data-nav="historico" data-client hidden>Meus aluguéis</a>
+          <a href="#perfil" data-nav="perfil" data-client hidden>Meu perfil</a>
           <a href="#login" data-nav="login" id="nav-login">Entrar</a>
           <a class="button small" href="#cadastro" data-nav="cadastro" id="nav-register">Criar conta <span aria-hidden="true">↗</span>
         </a>
@@ -37,7 +42,7 @@
     </div>
   </header>
   <main id="conteudo" tabindex="-1">
-    <p class="preview-notice">Projeto acadêmico: use dados fictícios. Os cadastros são de demonstração e se apagam ao recarregar ou fechar a página.</p>
+    <p class="preview-notice">Projeto acadêmico: use dados fictícios. Contas, códigos e reservas são simulados e se apagam ao recarregar. Não há envio de e-mail nem cobrança.</p>
     <section data-view="inicio">
       <div class="hero">
         <img class="hero-image" src="assets/piscina.jpg" alt="Piscina do sítio com vista para as montanhas e a natureza de Salesópolis" fetchpriority="high">
@@ -48,7 +53,7 @@
           <div class="actions">
             <a class="button gold" href="#sitio">Conhecer o sítio <span aria-hidden="true">↗</span>
           </a>
-          <a class="button translucent" href="#cadastro">Criar minha conta</a>
+          <a class="button translucent" href="#disponibilidade">Ver datas disponíveis</a>
         </div>
         <span class="hero-location">⌖ &nbsp; Salesópolis · São Paulo</span>
       </div>
@@ -290,6 +295,7 @@
             <button type="button" class="password-toggle" data-password="login-password" aria-label="Mostrar senha" aria-pressed="false">Mostrar</button>
           </div>
         </div>
+        <p class="forgot-link"><a href="#recuperar">Esqueci minha senha</a></p>
         <p class="form-message" id="login-message" role="alert" tabindex="-1">
         </p>
         <button class="button full-width" type="submit">Entrar na minha conta <span aria-hidden="true">↗</span>
@@ -300,6 +306,154 @@
 </div>
 </div>
 </section>
+<!-- SPRINT 2: recuperação de senha e área do cliente -->
+<section data-view="recuperar" hidden>
+  <div class="container recovery-layout">
+    <aside class="recovery-story">
+      <span class="eyebrow light">VOLTE AOS BONS MOMENTOS</span>
+      <h2>Um novo acesso.<br>O mesmo lugar ao sol.</h2>
+      <p>Recupere sua senha em três passos.</p>
+      <img src="assets/area-verde.jpg" alt="Natureza do Sítio Raio de Sol">
+    </aside>
+    <div class="panel recovery-panel">
+      <a class="back-link" href="#login">← Voltar para entrar</a>
+      <span class="eyebrow">RECUPERAÇÃO DE CONTA</span>
+      <h1>Esqueceu sua senha?</h1>
+      <ol class="steps" id="recovery-steps" aria-label="Etapas da recuperação"><li aria-current="step">1. E-mail</li><li>2. Código</li><li>3. Nova senha</li></ol>
+      <form id="recovery-email-form">
+        <p>Informe o e-mail utilizado no seu cadastro.</p>
+        <label for="recovery-email">E-mail cadastrado</label>
+        <input id="recovery-email" type="email" autocomplete="email" maxlength="254" required placeholder="voce@exemplo.com">
+        <p class="helper">Demonstração: use uma conta criada nesta página, sem recarregá-la.</p>
+        <button class="button full-width" type="submit">Gerar código de recuperação →</button>
+      </form>
+      <form id="recovery-code-form" hidden>
+        <p>Confirme o código de seis dígitos para <strong id="recovery-address"></strong>.</p>
+        <div class="demo-code"><span>Código demonstrativo — nenhum e-mail foi enviado</span><strong id="demo-code"></strong><small>Válido por 5 minutos. Um novo código invalida o anterior.</small></div>
+        <label for="recovery-code">Código de verificação</label>
+        <input id="recovery-code" class="code-input" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" required placeholder="000000">
+        <button class="button full-width" type="submit">Verificar código →</button>
+        <div class="actions recovery-actions"><button class="text-button" id="resend-code" type="button">Gerar outro código</button><button class="text-button" id="change-recovery-email" type="button">Alterar e-mail</button></div>
+      </form>
+      <form id="recovery-password-form" hidden>
+        <p>Código verificado. Escolha sua nova senha.</p>
+        <div class="field"><label for="recovery-password">Nova senha</label><input id="recovery-password" type="password" autocomplete="new-password" minlength="8" maxlength="30" required aria-describedby="recovery-password-help"></div>
+        <p class="helper" id="recovery-password-help">De 8 a 30 caracteres, com uma maiúscula, uma minúscula e um caractere especial.</p>
+        <div class="field"><label for="recovery-confirm">Confirmar nova senha</label><input id="recovery-confirm" type="password" autocomplete="new-password" minlength="8" maxlength="30" required></div>
+        <button class="button full-width" type="submit">Salvar nova senha</button>
+      </form>
+      <p id="recovery-message" class="form-message" role="alert" tabindex="-1"></p>
+    </div>
+  </div>
+</section>
+
+<section data-view="perfil" hidden>
+  <div class="container page-intro"><span class="eyebrow">ÁREA DO CLIENTE</span><h1>Meu perfil.</h1><p>Seus dados, sempre em dia para os próximos encontros.</p></div>
+  <div class="container customer-layout">
+    <aside class="panel customer-sidebar"><div class="avatar" id="profile-avatar" aria-hidden="true">☀</div><h2 id="profile-greeting"></h2><p class="muted">Seu cantinho no Raio de Sol</p><nav aria-label="Área do cliente"><a href="#perfil" aria-current="page">Meus dados</a><a href="#historico">Meus aluguéis →</a><a href="#disponibilidade">Planejar um novo aluguel →</a></nav></aside>
+    <div class="customer-content">
+      <form class="panel" id="profile-form">
+        <div class="panel-heading"><div><span class="eyebrow">INFORMAÇÕES PESSOAIS</span><h2>Seus dados</h2></div><span class="pill">Conta do cliente</span></div>
+        <div class="form-grid">
+          <div class="field full"><label for="profile-name">Nome completo</label><input id="profile-name" autocomplete="name" minlength="3" maxlength="120" required></div>
+          <div class="field"><label for="profile-phone">Telefone com DDD</label><input id="profile-phone" type="tel" autocomplete="tel-national" maxlength="15" required></div>
+          <div class="field"><label for="profile-birth">Data de nascimento</label><input id="profile-birth" type="date" autocomplete="bday" min="1900-01-01" required></div>
+          <div class="field"><label for="profile-email">E-mail · não pode ser alterado</label><input id="profile-email" type="email" readonly></div>
+          <div class="field"><label for="profile-cpf">CPF · não pode ser alterado</label><input id="profile-cpf" readonly></div>
+        </div>
+        <p id="profile-message" class="form-message" role="alert" tabindex="-1"></p>
+        <button class="button" type="submit">Salvar alterações</button>
+      </form>
+      <form class="panel" id="profile-password-form">
+        <span class="eyebrow">ACESSO À CONTA</span><h2>Alterar senha</h2>
+        <div class="form-grid">
+          <div class="field full"><label for="profile-current-password">Senha atual</label><input id="profile-current-password" type="password" autocomplete="current-password" maxlength="30" required></div>
+          <div class="field"><label for="profile-new-password">Nova senha</label><input id="profile-new-password" type="password" autocomplete="new-password" minlength="8" maxlength="30" required></div>
+          <div class="field"><label for="profile-confirm-password">Confirmar nova senha</label><input id="profile-confirm-password" type="password" autocomplete="new-password" minlength="8" maxlength="30" required></div>
+        </div>
+        <p class="helper">De 8 a 30 caracteres, uma maiúscula, uma minúscula e um caractere especial.</p>
+        <p id="profile-password-message" class="form-message" role="alert" tabindex="-1"></p>
+        <button class="button outline" type="submit">Atualizar senha</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section data-view="historico" hidden>
+  <div class="container page-intro heading-actions"><div><span class="eyebrow">ÁREA DO CLIENTE</span><h1>Meus aluguéis.</h1><p>Acompanhe suas solicitações e os detalhes de cada encontro.</p></div><a class="button" href="#disponibilidade">Novo aluguel ↗</a></div>
+  <div class="container history-content">
+    <div class="metrics"><div><small>Total de solicitações</small><strong id="history-total">0</strong></div><div><small>Aguardando aprovação</small><strong id="history-pending">0</strong></div><div><small>Canceladas</small><strong id="history-cancelled">0</strong></div></div>
+    <div class="history-toolbar"><p class="muted">Somente os aluguéis da sua conta aparecem aqui.</p><div><label for="history-filter">Filtrar por status</label><select id="history-filter"><option value="todos">Todos</option><option value="pendente">Aguardando aprovação</option><option value="cancelada">Cancelados</option></select></div></div>
+    <div id="history-list" aria-live="polite"></div>
+  </div>
+</section>
+
+<section data-view="disponibilidade" hidden>
+  <div class="container page-intro"><span class="eyebrow">PLANEJE SEUS BONS MOMENTOS</span><h1>Escolha seus dias ao sol.</h1><p>Aluguel por dia. Selecione o primeiro e o último dia — ambos entram no período.</p></div>
+  <div class="container booking-layout">
+    <div class="panel">
+      <div class="calendar-heading"><button class="calendar-arrow" id="previous-month" type="button" aria-label="Mês anterior">‹</button><h2 id="calendar-title" aria-live="polite"></h2><button class="calendar-arrow" id="next-month" type="button" aria-label="Próximo mês">›</button></div>
+      <div class="weekdays" aria-hidden="true"><span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span></div>
+      <div id="calendar-days" class="calendar-days" aria-label="Dias do mês"></div>
+      <div class="calendar-legend"><span><i class="legend-free"></i>Disponível</span><span><i class="legend-selected"></i>Selecionado</span><span><i class="legend-busy"></i>Indisponível</span></div>
+      <p class="helper">Agenda demonstrativa, com alguns dias ocupados de exemplo. Solicitações pendentes também bloqueiam o período nesta página. Não representa a agenda real do sítio.</p>
+    </div>
+    <aside class="panel booking-summary">
+      <span class="eyebrow">SEU PRÓXIMO ENCONTRO</span><h2>Período do aluguel</h2>
+      <form id="dates-form">
+        <div class="field"><label for="rental-start">Primeiro dia</label><input id="rental-start" type="date" required></div>
+        <div class="field"><label for="rental-end">Último dia</label><input id="rental-end" type="date" required></div>
+        <p id="period-summary" class="period-summary" aria-live="polite">Escolha as datas no calendário ou nos campos acima.</p>
+        <div class="price-note"><strong id="dates-price"></strong><p>Diária fictícia para demonstração. O administrador define o preço antes da solicitação. Confira o total ao selecionar as datas.</p></div>
+        <p id="dates-message" class="form-message" role="alert" tabindex="-1"></p>
+        <button class="button full-width" type="submit">Continuar →</button>
+        <button class="text-button clear-dates" id="clear-dates" type="button">Limpar seleção</button>
+      </form>
+    </aside>
+  </div>
+</section>
+
+<section data-view="aluguel-dados" hidden>
+  <div class="container page-intro"><span class="eyebrow">SOLICITAÇÃO DE ALUGUEL</span><h1>Conte sobre seu encontro.</h1><ol class="steps"><li>1. Datas</li><li aria-current="step">2. Detalhes</li><li>3. Revisão</li></ol></div>
+  <div class="container booking-layout">
+    <form id="rental-form" class="panel">
+      <h2>Detalhes do aluguel</h2><p class="muted">O responsável pela solicitação é o titular da conta.</p>
+      <div class="form-grid">
+        <div class="field"><label for="rental-name">Responsável</label><input id="rental-name" readonly></div>
+        <div class="field"><label for="rental-email">E-mail</label><input id="rental-email" readonly></div>
+        <div class="field"><label for="rental-phone">Telefone de contato</label><input id="rental-phone" type="tel" maxlength="15" required></div>
+        <div class="field"><label for="rental-guests">Quantidade de pessoas</label><input id="rental-guests" type="number" min="1" step="1" required placeholder="Incluindo o responsável"></div>
+        <div class="field full"><label for="rental-purpose">Tipo de encontro</label><select id="rental-purpose" required><option value="">Selecione</option><option>Encontro em família</option><option>Aniversário</option><option>Encontro com amigos</option><option>Confraternização</option><option>Outro</option></select></div>
+        <div class="field full"><label for="rental-notes">Observações (opcional)</label><textarea id="rental-notes" rows="4" maxlength="1000" placeholder="Conte o que o responsável pelo sítio precisa saber."></textarea></div>
+      </div>
+      <p class="helper">A capacidade para seu grupo e as condições do aluguel serão confirmadas pelo responsável.</p>
+      <p id="rental-message" class="form-message" role="alert" tabindex="-1"></p>
+      <div class="actions"><a class="button outline" href="#disponibilidade">← Alterar datas</a><button class="button" type="submit">Revisar solicitação →</button></div>
+    </form>
+    <aside class="panel booking-summary"><img class="summary-photo" src="assets/piscina.jpg" alt="Piscina do sítio"><span class="eyebrow">SÍTIO RAIO DE SOL</span><h2>Seu período</h2><p id="rental-period"></p><div class="price-note"><strong id="rental-price"></strong><p>Valores fictícios para demonstração. O preço já está definido; a reserva depende da aprovação do responsável.</p></div></aside>
+  </div>
+</section>
+
+<section data-view="aluguel-revisao" hidden>
+  <div class="container page-intro"><span class="eyebrow">QUASE LÁ</span><h1>Confira sua solicitação.</h1><ol class="steps"><li>1. Datas</li><li>2. Detalhes</li><li aria-current="step">3. Revisão</li></ol></div>
+  <div class="container review-layout panel"><h2>Resumo do aluguel</h2><dl class="details-grid" id="review-details"></dl>
+    <div class="price-note"><strong>Preço definido antes da solicitação</strong><p>Confira a diária e o total acima (valores fictícios). O envio solicita a aprovação da reserva, sem cobrança nesta demonstração.</p></div>
+    <form id="review-form"><label class="check-label"><input id="rental-acknowledgement" type="checkbox" required><span>Conferi as informações e entendo que esta é uma solicitação demonstrativa, sujeita à aprovação, sem pagamento.</span></label><p id="review-message" class="form-message" role="alert" tabindex="-1"></p><div class="actions"><a class="button outline" href="#aluguel-dados">← Editar detalhes</a><button class="button" id="send-rental" type="submit">Enviar solicitação</button></div></form>
+  </div>
+</section>
+
+<section data-view="aluguel-confirmacao" hidden>
+  <div class="container confirmation panel"><div class="success-mark" aria-hidden="true">✓</div><span class="eyebrow">SOLICITAÇÃO REGISTRADA NA DEMONSTRAÇÃO</span><h1>Um passo mais perto<br>dos bons momentos.</h1><p>Seu pedido está aguardando aprovação do responsável.</p><dl class="details-grid" id="confirmation-details"></dl><p class="helper">Nesta versão acadêmica, nenhuma solicitação é enviada ao sítio. O registro fica apenas nesta página.</p><div class="actions"><a class="button" id="confirmation-link" href="#historico">Ver detalhes →</a><a class="button outline" href="#historico">Meus aluguéis</a></div></div>
+</section>
+
+<section data-view="aluguel-detalhe" hidden>
+  <div class="container page-intro"><a class="back-link" href="#historico">← Meus aluguéis</a><span class="eyebrow">ACOMPANHE SEU PEDIDO</span><h1>Detalhes do aluguel.</h1></div>
+  <div class="container review-layout panel"><div class="panel-heading"><h2 id="detail-title"></h2><span class="pill" id="detail-status"></span></div><dl class="details-grid" id="rental-details"></dl><div class="price-note"><strong>Preço registrado na solicitação</strong><p>A diária e o total acima são os valores apresentados antes do envio. Valores fictícios, sem pagamento nesta demonstração. A reserva depende de aprovação.</p></div><p id="detail-message" class="helper"></p><button class="button outline danger" id="cancel-rental" type="button">Cancelar solicitação</button></div>
+</section>
+
+<dialog id="cancel-dialog" class="panel cancel-dialog" aria-labelledby="cancel-title">
+  <h2 id="cancel-title">Cancelar solicitação?</h2><p>O pedido será marcado como cancelado e os dias ficarão livres nesta demonstração. Para solicitar novamente, crie um novo pedido.</p><div class="actions"><button class="button outline" id="keep-rental" type="button">Manter solicitação</button><button class="button" id="confirm-cancellation" type="button">Sim, cancelar</button></div>
+</dialog>
 </main>
 <footer class="footer">
   <div class="container footer-inner">

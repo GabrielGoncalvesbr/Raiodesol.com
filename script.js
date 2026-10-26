@@ -2,25 +2,33 @@
 const usuarios = [];
 let usuarioLogado = null;
 let tempoAviso;
+let retornoLogin = 'perfil';
 
 function selecionar(seletor) {
   return document.querySelector(seletor);
 }
 
-// NAVEGAÇÃO ENTRE AS QUATRO TELAS
+// NAVEGAÇÃO ENTRE AS TELAS
 function fecharMenu() {
   selecionar('#navigation').classList.remove('open');
   selecionar('.menu-button').setAttribute('aria-expanded', 'false');
 }
 
 function mostrarTela(moverFoco = true) {
-  const telas = ['inicio', 'cadastro', 'sitio', 'login'];
-  let tela = location.hash.replace('#', '') || 'inicio';
+  const telas = ['inicio', 'cadastro', 'sitio', 'login', 'recuperar', 'perfil', 'historico', 'disponibilidade', 'aluguel-dados', 'aluguel-revisao', 'aluguel-confirmacao', 'aluguel-detalhe'];
+  let tela = location.hash.replace('#', '').split('/')[0] || 'inicio';
   if (tela === 'conteudo') {
     selecionar('#conteudo').focus();
     return;
   }
   if (!telas.includes(tela)) tela = 'inicio';
+  const protegidas = ['perfil', 'historico', 'aluguel-dados', 'aluguel-revisao', 'aluguel-confirmacao', 'aluguel-detalhe'];
+  if (protegidas.includes(tela) && !usuarioLogado) {
+    retornoLogin = location.hash.slice(1);
+    location.hash = '#login';
+    tela = 'login';
+  }
+  if (typeof prepararTelaSprint2 === 'function' && prepararTelaSprint2(tela) === false) return;
   document.querySelectorAll('[data-view]').forEach(function (secao) {
     secao.hidden = secao.dataset.view !== tela;
   });
@@ -28,7 +36,7 @@ function mostrarTela(moverFoco = true) {
     if (link.dataset.nav === tela) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   });
-  const titulos = { inicio: 'Início', cadastro: 'Criar conta', sitio: 'Conhecer o sítio', login: 'Entrar' };
+  const titulos = { inicio: 'Início', cadastro: 'Criar conta', sitio: 'Conhecer o sítio', login: 'Entrar', recuperar: 'Recuperar senha', perfil: 'Meu perfil', historico: 'Meus aluguéis', disponibilidade: 'Disponibilidade', 'aluguel-dados': 'Detalhes do aluguel', 'aluguel-revisao': 'Revisar solicitação', 'aluguel-confirmacao': 'Solicitação enviada', 'aluguel-detalhe': 'Detalhes da solicitação' };
   document.title = titulos[tela] + ' · Sítio Raio de Sol';
   fecharMenu();
   if (tela !== 'login') selecionar('#login-password').value = '';
@@ -195,6 +203,7 @@ function atualizarConta() {
   selecionar('#nav-register').hidden = conectado;
   selecionar('#account').hidden = !conectado;
   selecionar('#account-name').textContent = conectado ? 'Olá, ' + usuarioLogado.nome.split(' ')[0] : '';
+  document.querySelectorAll('[data-client]').forEach(function (link) { link.hidden = !conectado; });
 }
 selecionar('#login-form').addEventListener('submit', function (evento) {
   evento.preventDefault();
@@ -214,10 +223,12 @@ selecionar('#login-form').addEventListener('submit', function (evento) {
   usuarioLogado = encontrado;
   atualizarConta();
   this.reset();
-  location.hash = '#inicio';
+  location.hash = '#' + retornoLogin;
+  retornoLogin = 'perfil';
   mostrarAviso('Bem-vindo, ' + encontrado.nome.split(' ')[0] + '! Login de demonstração realizado.');
 });
 selecionar('#logout').addEventListener('click', function () {
+  if (typeof limparSessaoSprint2 === 'function') limparSessaoSprint2();
   usuarioLogado = null;
   atualizarConta();
   location.hash = '#inicio';
