@@ -7,7 +7,7 @@ Site em desenvolvimento com **HTML, CSS e JavaScript básico**, sem frameworks, 
 **[ Clique aqui para abrir o Sítio Raio de Sol](https://gabrielgoncalvesbr.github.io/Raiodesol.com/)**
 
 ## Conta Teste Client
-Email: clienteteste@gmail.com <\br>
+Email: clienteteste@gmail.com   
 Senha: Teste12@
 
 ## Arquivos
