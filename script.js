@@ -1,5 +1,13 @@
-// Projeto acadêmico: cadastros em memória, apagados ao recarregar a página.
-const usuarios = [];
+// Projeto acadêmico: alterações ficam na memória da página.
+// Esta conta fictícia é recriada com os dados abaixo a cada carregamento.
+const usuarios = [{
+  nome: 'Cliente Teste',
+  email: 'clienteteste@gmail.com',
+  senha: 'Teste12@',
+  cpf: '52998224725',
+  telefone: '11999999999',
+  nascimento: '2000-01-01'
+}];
 let usuarioLogado = null;
 let tempoAviso;
 let retornoLogin = 'perfil';

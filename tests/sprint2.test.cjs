@@ -39,12 +39,26 @@ function ambiente() {
     const alvo = obter('#' + id);
     alvo.handlers[tipo].call(alvo, { preventDefault() {} });
   }
-  executar(`usuarios.push(
+  executar(`usuarios.unshift(
     {nome:'Cliente Um',email:'um@example.com',cpf:'52998224725',telefone:'11987654321',nascimento:'1990-01-01',senha:'Inicial!1'},
     {nome:'Cliente Dois',email:'dois@example.com',cpf:'11144477735',telefone:'11987654322',nascimento:'1991-01-01',senha:'Inicial!2'}
   );`);
   return { obter, executar, acionar, contexto };
 }
+
+test('conta demonstrativa permite login e volta aos dados iniciais ao reabrir', () => {
+  const a = ambiente();
+  a.obter('#login-email').value = 'clienteteste@gmail.com';
+  a.obter('#login-password').value = 'Teste12@';
+  a.acionar('login-form');
+  assert.equal(a.executar('usuarioLogado.email'), 'clienteteste@gmail.com');
+  a.executar("usuarioLogado.senha = 'Alterada!1';");
+  const b = ambiente();
+  b.obter('#login-email').value = 'clienteteste@gmail.com';
+  b.obter('#login-password').value = 'Teste12@';
+  b.acionar('login-form');
+  assert.equal(b.executar('usuarioLogado.nome'), 'Cliente Teste');
+});
 
 test('recuperação rejeita código incorreto/expirado, limita tentativas e altera só a conta verificada', () => {
   const a = ambiente();

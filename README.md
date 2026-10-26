@@ -8,6 +8,13 @@ Site em desenvolvimento com **HTML, CSS e JavaScript básico**, sem frameworks, 
 
 ## Organização
 
+## Conta de demonstração
+
+Para testar sem fazer cadastro, entre com **clienteteste@gmail.com** e senha **Teste12@**.
+Essa conta fictícia é recriada a cada carregamento. Alterações no perfil ou na senha e pedidos de aluguel não são salvos ao recarregar. Não use essa conta para dados reais.
+
+## Arquivos
+
 - `index.html`: estrutura de todas as telas, incluindo as novas telas da sprint 2.
 - `style.css`: cores, fontes, tamanhos, posicionamento e layout para celular e computador.
 - `script.js`: troca de telas, menu, máscaras, validação e simulação do cadastro e login. O código está dividido em blocos comentados em português.
