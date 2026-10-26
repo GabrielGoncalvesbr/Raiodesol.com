@@ -31,7 +31,7 @@ function ambiente() {
     window: { addEventListener() {}, scrollTo() {} },
     location: { hash: '#inicio' }, crypto: webcrypto, setTimeout: () => 1, clearTimeout() {}
   });
-  for (const arquivo of ['script.js', 'sprint2.js']) {
+  for (const arquivo of ['script.js']) {
     vm.runInContext(fs.readFileSync(path.join(__dirname, '..', arquivo), 'utf8'), contexto);
   }
   function executar(codigo) { return vm.runInContext(codigo, contexto); }

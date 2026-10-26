@@ -6,8 +6,6 @@ Site em desenvolvimento com **HTML, CSS e JavaScript básico**, sem frameworks, 
 
 **[ Clique aqui para abrir o Sítio Raio de Sol](https://gabrielgoncalvesbr.github.io/Raiodesol.com/)**
 
-## Organização
-
 ## Conta de demonstração
 
 Para testar sem fazer cadastro, entre com **clienteteste@gmail.com** e senha **Teste12@**.
@@ -17,9 +15,7 @@ Essa conta fictícia é recriada a cada carregamento. Alterações no perfil ou 
 
 - `index.html`: estrutura de todas as telas, incluindo as novas telas da sprint 2.
 - `style.css`: cores, fontes, tamanhos, posicionamento e layout para celular e computador.
-- `script.js`: troca de telas, menu, máscaras, validação e simulação do cadastro e login. O código está dividido em blocos comentados em português.
-- `sprint2.js`: recuperação de senha, perfil, calendário e fluxo de aluguel, com comentários em português.
-- `sprint2.css`: aparência das telas da sprint 2 e adaptação ao celular.
+- `script.js`: toda a lógica do site: navegação, cadastro, login, recuperação de senha, perfil, calendário e aluguéis. O código está dividido em blocos comentados em português.
 - `assets/`: fotografias do sítio.
 
 As telas são seções do mesmo HTML. O JavaScript mostra a seção selecionada e oculta as outras. Abra `index.html` diretamente, mantendo os arquivos CSS e JavaScript e a pasta `assets` juntos. Não precisa instalar nada.
@@ -34,7 +30,7 @@ As telas são seções do mesmo HTML. O JavaScript mostra a seção selecionada 
 
 O aluguel é **por dia**, incluindo o primeiro e o último dia (selecionar a mesma data representa um dia). Períodos que atravessam um dia ocupado não são aceitos. Solicitações pendentes bloqueiam as datas dentro da demonstração para impedir sobreposição.
 
-O **valor é definido pelo administrador antes da solicitação** e a **aprovação da reserva é obrigatória**. O cliente vê a diária e o total ao selecionar as datas e na revisão, antes de enviar. O pedido guarda esses valores, mesmo que a diária seja alterada posteriormente. Nesta demonstração, usamos uma diária fictícia de R$ 500,00, configurada em `configuracaoAluguel.diariaCentavos` no arquivo `sprint2.js` (50000 centavos). Esse não é o preço real do sítio. A futura área administrativa editará essa configuração. Os pedidos ficam “Aguardando aprovação”; não há cobrança, pagamento ou confirmação automática. A quantidade de pessoas é informada para análise; a capacidade máxima do sítio ainda precisa ser definida.
+O **valor é definido pelo administrador antes da solicitação** e a **aprovação da reserva é obrigatória**. O cliente vê a diária e o total ao selecionar as datas e na revisão, antes de enviar. O pedido guarda esses valores, mesmo que a diária seja alterada posteriormente. Nesta demonstração, usamos uma diária fictícia de R$ 500,00, configurada em `configuracaoAluguel.diariaCentavos` no arquivo `script.js` (50000 centavos). Esse não é o preço real do sítio. A futura área administrativa editará essa configuração. Os pedidos ficam “Aguardando aprovação”; não há cobrança, pagamento ou confirmação automática. A quantidade de pessoas é informada para análise; a capacidade máxima do sítio ainda precisa ser definida.
 
 Use dados fictícios: contas e pedidos ficam na memória da página e se apagam ao recarregar.
 
@@ -48,4 +44,3 @@ O painel administrativo e o envio real de e-mail precisam de uma próxima etapa 
 4. Revise e envie. Confira o protocolo e o status pendente em “Meus aluguéis”.
 5. Abra os detalhes e cancele. Confira a mudança no histórico e a liberação das datas.
 6. Uma segunda conta criada na mesma página não vê os pedidos da primeira.
-
