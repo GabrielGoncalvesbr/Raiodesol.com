@@ -25,6 +25,8 @@ function fecharMenu() {
 function mostrarTela(moverFoco = true) {
   const telas = ['inicio', 'cadastro', 'sitio', 'login', 'recuperar', 'perfil', 'historico', 'disponibilidade', 'aluguel-dados', 'aluguel-revisao', 'aluguel-confirmacao', 'aluguel-detalhe'];
   let tela = location.hash.replace('#', '').split('/')[0] || 'inicio';
+  // Mantém links antigos funcionando, mas o histórico agora fica dentro do perfil.
+  if (tela === 'historico') { location.hash = '#perfil/alugueis'; return; }
   if (tela === 'conteudo') {
     selecionar('#conteudo').focus();
     return;
@@ -753,10 +755,19 @@ function prepararTela(tela) {
   selecionar('#cancel-dialog').close();
   if (tela === 'perfil' && usuarioLogado) {
     preencherPerfil();
+    const verAlugueis = location.hash === '#perfil/alugueis';
+    selecionar('#profile-data').hidden = verAlugueis;
+    selecionar('#profile-rentals').hidden = !verAlugueis;
+    selecionar('#profile-data-link').removeAttribute('aria-current');
+    selecionar('#profile-rentals-link').removeAttribute('aria-current');
+    selecionar(verAlugueis ? '#profile-rentals-link' : '#profile-data-link').setAttribute('aria-current', 'page');
+    if (verAlugueis) {
+      selecionar('#profile-password-form').reset();
+      renderizarHistorico();
+    }
     exibirMensagem('profile-message', '');
     exibirMensagem('profile-password-message', '');
   }
-  if (tela === 'historico') renderizarHistorico();
   if (tela === 'disponibilidade') { atualizarSelecao(); renderizarCalendario(); }
   if (tela === 'aluguel-dados' || tela === 'aluguel-revisao') {
     if (!usuarioLogado || !rascunhoAluguel || erroPeriodo(rascunhoAluguel.inicio, rascunhoAluguel.fim)) {
@@ -777,13 +788,13 @@ function prepararTela(tela) {
   }
   if (tela === 'aluguel-confirmacao') {
     const aluguel = meuAluguel(ultimoAluguel);
-    if (!aluguel) { location.hash = '#historico'; return false; }
+    if (!aluguel) { location.hash = '#perfil/alugueis'; return false; }
     preencherDetalhes('confirmation-details', [['Protocolo', aluguel.id], ['Período', textoPeriodo(aluguel.inicio, aluguel.fim)], ['Status', textoStatus(aluguel.status)], ['Total do período', formatarValor(aluguel.preco.totalCentavos)]]);
     selecionar('#confirmation-link').href = '#aluguel-detalhe/' + aluguel.id;
   }
   if (tela === 'aluguel-detalhe') {
     const aluguel = meuAluguel(location.hash.split('/')[1]);
-    if (!aluguel) { location.hash = '#historico'; mostrarAviso('Solicitação não encontrada nesta conta.'); return false; }
+    if (!aluguel) { location.hash = '#perfil/alugueis'; mostrarAviso('Solicitação não encontrada nesta conta.'); return false; }
     renderizarDetalhe(aluguel);
   }
   return true;

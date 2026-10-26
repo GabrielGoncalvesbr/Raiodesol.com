@@ -26,7 +26,6 @@
           <a href="#inicio" data-nav="inicio">Início</a>
           <a href="#sitio" data-nav="sitio">Conhecer o sítio</a>
           <a href="#disponibilidade" data-nav="disponibilidade">Alugar o sítio</a>
-          <a href="#historico" data-nav="historico" data-client hidden>Meus aluguéis</a>
           <a href="#perfil" data-nav="perfil" data-client hidden>Meu perfil</a>
           <a href="#login" data-nav="login" id="nav-login">Entrar</a>
           <a class="button small" href="#cadastro" data-nav="cadastro" id="nav-register">Criar conta <span aria-hidden="true">↗</span>
@@ -348,8 +347,8 @@
 <section data-view="perfil" hidden>
   <div class="container page-intro"><span class="eyebrow">ÁREA DO CLIENTE</span><h1>Meu perfil.</h1><p>Seus dados, sempre em dia para os próximos encontros.</p></div>
   <div class="container customer-layout">
-    <aside class="panel customer-sidebar"><div class="avatar" id="profile-avatar" aria-hidden="true">☀</div><h2 id="profile-greeting"></h2><p class="muted">Seu cantinho no Raio de Sol</p><nav aria-label="Área do cliente"><a href="#perfil" aria-current="page">Meus dados</a><a href="#historico">Meus aluguéis →</a><a href="#disponibilidade">Planejar um novo aluguel →</a></nav></aside>
-    <div class="customer-content">
+    <aside class="panel customer-sidebar"><div class="avatar" id="profile-avatar" aria-hidden="true">☀</div><h2 id="profile-greeting"></h2><p class="muted">Seu cantinho no Raio de Sol</p><nav aria-label="Área do cliente"><a id="profile-data-link" href="#perfil" aria-current="page" aria-controls="profile-data">Meus dados</a><a id="profile-rentals-link" href="#perfil/alugueis" aria-controls="profile-rentals">Meus aluguéis</a><a href="#disponibilidade">Planejar um novo aluguel →</a></nav></aside>
+    <div class="customer-content" id="profile-data">
       <form class="panel" id="profile-form">
         <div class="panel-heading"><div><span class="eyebrow">INFORMAÇÕES PESSOAIS</span><h2>Seus dados</h2></div><span class="pill">Conta do cliente</span></div>
         <div class="form-grid">
@@ -374,15 +373,10 @@
         <button class="button outline" type="submit">Atualizar senha</button>
       </form>
     </div>
-  </div>
-</section>
-
-<section data-view="historico" hidden>
-  <div class="container page-intro heading-actions"><div><span class="eyebrow">ÁREA DO CLIENTE</span><h1>Meus aluguéis.</h1><p>Acompanhe suas solicitações e os detalhes de cada encontro.</p></div><a class="button" href="#disponibilidade">Novo aluguel ↗</a></div>
-  <div class="container history-content">
+    <div id="profile-rentals" hidden><div class="heading-actions"><div><h2>Meus aluguéis</h2><p>Acompanhe suas solicitações e os detalhes de cada encontro.</p></div><a class="button" href="#disponibilidade">Novo aluguel ↗</a></div><div class="history-content">
     <div class="metrics"><div><small>Total de solicitações</small><strong id="history-total">0</strong></div><div><small>Aguardando aprovação</small><strong id="history-pending">0</strong></div><div><small>Canceladas</small><strong id="history-cancelled">0</strong></div></div>
     <div class="history-toolbar"><p class="muted">Somente os aluguéis da sua conta aparecem aqui.</p><div><label for="history-filter">Filtrar por status</label><select id="history-filter"><option value="todos">Todos</option><option value="pendente">Aguardando aprovação</option><option value="cancelada">Cancelados</option></select></div></div>
-    <div id="history-list" aria-live="polite"></div>
+    <div id="history-list" aria-live="polite"></div></div></div>
   </div>
 </section>
 
@@ -441,11 +435,11 @@
 </section>
 
 <section data-view="aluguel-confirmacao" hidden>
-  <div class="container confirmation panel"><div class="success-mark" aria-hidden="true">✓</div><span class="eyebrow">SOLICITAÇÃO REGISTRADA NA DEMONSTRAÇÃO</span><h1>Um passo mais perto<br>dos bons momentos.</h1><p>Seu pedido está aguardando aprovação do responsável.</p><dl class="details-grid" id="confirmation-details"></dl><p class="helper">Nesta versão acadêmica, nenhuma solicitação é enviada ao sítio. O registro fica apenas nesta página.</p><div class="actions"><a class="button" id="confirmation-link" href="#historico">Ver detalhes →</a><a class="button outline" href="#historico">Meus aluguéis</a></div></div>
+  <div class="container confirmation panel"><div class="success-mark" aria-hidden="true">✓</div><span class="eyebrow">SOLICITAÇÃO REGISTRADA NA DEMONSTRAÇÃO</span><h1>Um passo mais perto<br>dos bons momentos.</h1><p>Seu pedido está aguardando aprovação do responsável.</p><dl class="details-grid" id="confirmation-details"></dl><p class="helper">Nesta versão acadêmica, nenhuma solicitação é enviada ao sítio. O registro fica apenas nesta página.</p><div class="actions"><a class="button" id="confirmation-link" href="#perfil/alugueis">Ver detalhes →</a><a class="button outline" href="#perfil/alugueis">Meus aluguéis</a></div></div>
 </section>
 
 <section data-view="aluguel-detalhe" hidden>
-  <div class="container page-intro"><a class="back-link" href="#historico">← Meus aluguéis</a><span class="eyebrow">ACOMPANHE SEU PEDIDO</span><h1>Detalhes do aluguel.</h1></div>
+  <div class="container page-intro"><a class="back-link" href="#perfil/alugueis">← Meus aluguéis</a><span class="eyebrow">ACOMPANHE SEU PEDIDO</span><h1>Detalhes do aluguel.</h1></div>
   <div class="container review-layout panel"><div class="panel-heading"><h2 id="detail-title"></h2><span class="pill" id="detail-status"></span></div><dl class="details-grid" id="rental-details"></dl><div class="price-note"><strong>Preço registrado na solicitação</strong><p>A diária e o total acima são os valores apresentados antes do envio. Valores fictícios, sem pagamento nesta demonstração. A reserva depende de aprovação.</p></div><p id="detail-message" class="helper"></p><button class="button outline danger" id="cancel-rental" type="button">Cancelar solicitação</button></div>
 </section>
 

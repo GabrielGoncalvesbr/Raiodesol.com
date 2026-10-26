@@ -26,7 +26,7 @@ As telas são seções do mesmo HTML. O JavaScript mostra a seção selecionada 
 - **Meu perfil:** o cliente altera nome, telefone, nascimento e senha. CPF e e-mail são somente leitura e não são atualizados pelo formulário. A troca de senha exige a senha atual.
 - **Disponibilidade:** calendário mensal para os próximos 12 meses, com dias passados e ocupados desabilitados. Os dias ocupados de exemplo são fictícios, não a agenda real do sítio.
 - **Alugar:** selecionar primeiro e último dia → entrar ou cadastrar → preencher contato, pessoas e tipo de encontro → revisar → enviar → ver protocolo e status.
-- **Meus aluguéis:** histórico exclusivo da conta conectada, filtro de status, detalhes e cancelamento com confirmação. O cancelamento libera as datas nesta demonstração.
+- **Meus aluguéis:** aba dentro de **Meu perfil**, ao lado de **Meus dados**, sem atalho no menu superior. Histórico exclusivo da conta conectada, filtro de status, detalhes e cancelamento com confirmação. O cancelamento libera as datas nesta demonstração.
 
 O aluguel é **por dia**, incluindo o primeiro e o último dia (selecionar a mesma data representa um dia). Períodos que atravessam um dia ocupado não são aceitos. Solicitações pendentes bloqueiam as datas dentro da demonstração para impedir sobreposição.
 

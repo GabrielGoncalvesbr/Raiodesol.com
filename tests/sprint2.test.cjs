@@ -194,3 +194,20 @@ test('rotas privadas exigem login e revisão exige seleção prévia', () => {
     assert.equal(a.executar("senhaValida('Aa!' + 'x'.repeat(" + (tamanho - 3) + "))"), tamanho >= 8 && tamanho <= 30);
   }
 });
+
+test('aluguéis são uma aba privada do perfil e links antigos continuam funcionando', () => {
+  const a = ambiente();
+  a.executar("location.hash = '#perfil/alugueis'; mostrarTela();");
+  assert.equal(a.contexto.location.hash, '#login');
+  assert.equal(a.executar('retornoLogin'), 'perfil/alugueis');
+  a.executar("usuarioLogado = usuarios[0]; location.hash = '#perfil/alugueis'; mostrarTela();");
+  assert.equal(a.obter('#profile-data').hidden, true);
+  assert.equal(a.obter('#profile-rentals').hidden, false);
+  assert.equal(a.obter('#profile-rentals-link').attributes['aria-current'], 'page');
+  a.executar("location.hash = '#perfil'; mostrarTela();");
+  assert.equal(a.obter('#profile-data').hidden, false);
+  assert.equal(a.obter('#profile-rentals').hidden, true);
+  assert.equal(a.obter('#profile-data-link').attributes['aria-current'], 'page');
+  a.executar("location.hash = '#historico'; mostrarTela();");
+  assert.equal(a.contexto.location.hash, '#perfil/alugueis');
+});

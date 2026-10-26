@@ -1297,6 +1297,9 @@ main:focus {
 .customer-sidebar nav a { padding: 10px; border-radius: 6px; }
 .customer-sidebar nav a[aria-current="page"] { background: #f3f2e9; box-shadow: none; }
 .customer-content { display: grid; gap: 24px; }
+#profile-rentals { min-width: 0; }
+#profile-rentals .heading-actions { margin-bottom: 24px; }
+#profile-rentals .history-content { padding-bottom: 0; }
 input[readonly] { background: #eeefe9; color: #677168; cursor: default; }
 .pill { display: inline-block; border-radius: 30px; padding: 6px 12px; background: #f5ebcf; color: #71591e; font-size: 11px; font-weight: 700; line-height: 1.5; }
 .pill.cancelada { background: #f3e8e5; color: #8c4438; }
