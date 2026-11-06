@@ -10,6 +10,10 @@ Site em desenvolvimento com **HTML, CSS e JavaScript básico**, sem frameworks, 
 Email: clienteteste@gmail.com   
 Senha: Teste12@
 
+## Conta Teste Adiministrador
+Conta administrativa: adminteste@example.com
+Senha: Admin12@
+
 ## Arquivos
 
 - `index.html`: estrutura de todas as telas, incluindo as novas telas da sprint 2.
