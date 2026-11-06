@@ -211,3 +211,57 @@ test('aluguéis são uma aba privada do perfil e links antigos continuam funcion
   a.executar("location.hash = '#historico'; mostrarTela();");
   assert.equal(a.contexto.location.hash, '#perfil/alugueis');
 });
+
+test('admin restringe acesso e aprova ou recusa preservando preço e notificando só o titular', () => {
+  const a = ambiente();
+  a.executar("location.hash = '#admin'; mostrarTela();");
+  assert.equal(a.contexto.location.hash, '#login');
+  a.executar("usuarioLogado=usuarios[0]; location.hash='#admin-pedidos'; mostrarTela();");
+  assert.equal(a.contexto.location.hash, '#perfil');
+  a.executar(`const testeDia = dataISO(hojeAgenda);
+    alugueis.push({id:'TESTE',inicio:testeDia,fim:testeDia,status:'pendente',preco:calcularPreco(testeDia,testeDia),
+    detalhes:{nome:usuarios[0].nome,email:usuarios[0].email,telefone:usuarios[0].telefone,pessoas:5,tipo:'Família',observacoes:''}});`);
+  assert.ok(a.executar("decidirPedido('TESTE','aprovada','')"));
+  assert.ok(a.executar("adicionarBloqueio(dataISO(hojeAgenda),dataISO(hojeAgenda),'Fechado')"));
+  a.executar("usuarioLogado=usuarios.find(u=>u.papel==='admin');");
+  assert.ok(a.executar("decidirPedido('TESTE','recusada','   ')"));
+  assert.equal(a.executar("decidirPedido('TESTE','aprovada','Bem-vindo!')"), '');
+  assert.equal(a.executar('alugueis[0].status'), 'aprovada');
+  assert.equal(a.executar('notificacoes.length'), 1);
+  assert.equal(a.executar('notificacoes[0].email'), 'um@example.com');
+  assert.ok(a.executar("decidirPedido('TESTE','recusada','Outro motivo')"));
+  a.obter('#admin-daily-price').value='650.25';
+  a.acionar('admin-price-form');
+  assert.equal(a.executar('configuracaoAluguel.diariaCentavos'),65025);
+  assert.equal(a.executar('alugueis[0].preco.totalCentavos'),50000);
+  a.executar('usuarioLogado=usuarios[1]; renderizarNotificacoes();');
+  assert.equal(a.obter('#notifications-list').children.length,1);
+  assert.equal(a.obter('#notifications-list').children[0].textContent,'Você ainda não tem notificações.');
+  a.executar("usuarioLogado=usuarios.find(u=>u.papel==='admin'); alugueis[0].status='pendente';");
+  assert.equal(a.executar("decidirPedido('TESTE','recusada','Capacidade insuficiente')"),'');
+  assert.equal(a.executar('diaOcupado(dataISO(hojeAgenda))'),false);
+});
+
+test('agenda administrativa valida bloqueios e diária e não sobrepõe pedidos', () => {
+  const a=ambiente();
+  a.executar("usuarioLogado=usuarios.find(u=>u.papel==='admin');");
+  for (const valor of ['0','-1','abc','1.234','1000001']) {
+    a.obter('#admin-daily-price').value=valor;
+    a.acionar('admin-price-form');
+    assert.equal(a.executar('configuracaoAluguel.diariaCentavos'),50000);
+  }
+  assert.equal(a.executar("adicionarBloqueio(dataISO(hojeAgenda),dataISO(hojeAgenda),'Manutenção')"),'');
+  assert.equal(a.executar('diaOcupado(dataISO(hojeAgenda))'),true);
+  assert.ok(a.executar("adicionarBloqueio(dataISO(hojeAgenda),dataISO(hojeAgenda),'Duplicado')"));
+  a.executar('renderizarAgendaAdmin();');
+  a.obter('#admin-blocks').children[0].children[1].handlers.click();
+  assert.equal(a.executar('diaOcupado(dataISO(hojeAgenda))'),false);
+  a.executar(`alugueis.push({id:'CONFLITO',inicio:dataISO(hojeAgenda),fim:dataISO(hojeAgenda),status:'pendente'});`);
+  assert.ok(a.executar("adicionarBloqueio(dataISO(hojeAgenda),dataISO(hojeAgenda),'Manutenção')"));
+  a.executar("bloqueiosAgenda.push({inicio:dataISO(hojeAgenda),fim:dataISO(hojeAgenda),motivo:'Conflito'});");
+  assert.ok(a.executar("decidirPedido('CONFLITO','aprovada','')"));
+  a.executar('usuarioLogado=usuarios[0];');
+  a.obter('#admin-daily-price').value='700';
+  a.acionar('admin-price-form');
+  assert.equal(a.executar('configuracaoAluguel.diariaCentavos'),50000);
+});

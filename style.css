@@ -1420,3 +1420,22 @@ textarea { resize: vertical; }
   .details-grid { grid-template-columns: 1fr; }
   .booking-layout .actions, .review-layout .actions { align-items: stretch; flex-direction: column; }
 }
+
+/* Administração: mesmos componentes e cores da área do cliente. */
+.admin-tabs { display: flex; flex-wrap: wrap; position: static; gap: 10px; padding: 20px 0 0; background: none; box-shadow: none; border: 0; }
+nav.admin-tabs > a:not(.button) { padding: 12px 18px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px; }
+nav.admin-tabs > a[aria-current="page"]:not(.button) { background: var(--green); color: white; }
+.admin-content { padding-bottom: 70px; }
+.admin-content > .heading-actions, .admin-content > h2 { margin: 32px 0 20px; }
+.admin-content .metrics strong { font-size: clamp(22px, 3vw, 36px); overflow-wrap: anywhere; }
+.admin-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+#admin-order-panel { margin-bottom: 28px; }
+#profile-notifications { min-width: 0; }
+#profile-notifications > p { margin-bottom: 24px; }
+.pill.aprovada { background: #e0efe3; color: #285037; }
+.pill.recusada { background: #f3e8e5; color: #8c4438; }
+@media (max-width: 760px) {
+  .admin-form-grid { grid-template-columns: 1fr; }
+  .admin-tabs { display: flex; width: 100%; }
+  nav.admin-tabs > a:not(.button) { flex: 1; text-align: center; padding: 10px; }
+}

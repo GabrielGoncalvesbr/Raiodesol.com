@@ -7,6 +7,9 @@ const usuarios = [{
   cpf: '52998224725',
   telefone: '11999999999',
   nascimento: '2000-01-01'
+}, {
+  nome: 'Administrador Teste', email: 'adminteste@example.com', senha: 'Admin12@',
+  cpf: '11144477735', telefone: '11988888888', nascimento: '1990-01-01', papel: 'admin'
 }];
 let usuarioLogado = null;
 let tempoAviso;
@@ -23,7 +26,7 @@ function fecharMenu() {
 }
 
 function mostrarTela(moverFoco = true) {
-  const telas = ['inicio', 'cadastro', 'sitio', 'login', 'recuperar', 'perfil', 'historico', 'disponibilidade', 'aluguel-dados', 'aluguel-revisao', 'aluguel-confirmacao', 'aluguel-detalhe'];
+  const telas = ['inicio', 'cadastro', 'sitio', 'login', 'recuperar', 'perfil', 'historico', 'disponibilidade', 'aluguel-dados', 'aluguel-revisao', 'aluguel-confirmacao', 'aluguel-detalhe', 'admin', 'admin-pedidos', 'admin-agenda'];
   let tela = location.hash.replace('#', '').split('/')[0] || 'inicio';
   // Mantém links antigos funcionando, mas o histórico agora fica dentro do perfil.
   if (tela === 'historico') { location.hash = '#perfil/alugueis'; return; }
@@ -32,6 +35,11 @@ function mostrarTela(moverFoco = true) {
     return;
   }
   if (!telas.includes(tela)) tela = 'inicio';
+  if (tela.startsWith('admin') && !ehAdministrador()) {
+    retornoLogin = tela;
+    location.hash = usuarioLogado ? '#perfil' : '#login';
+    return;
+  }
   const protegidas = ['perfil', 'historico', 'aluguel-dados', 'aluguel-revisao', 'aluguel-confirmacao', 'aluguel-detalhe'];
   if (protegidas.includes(tela) && !usuarioLogado) {
     retornoLogin = location.hash.slice(1);
@@ -47,7 +55,7 @@ function mostrarTela(moverFoco = true) {
     else link.removeAttribute('aria-current');
   });
   const titulos = { inicio: 'Início', cadastro: 'Criar conta', sitio: 'Conhecer o sítio', login: 'Entrar', recuperar: 'Recuperar senha', perfil: 'Meu perfil', historico: 'Meus aluguéis', disponibilidade: 'Disponibilidade', 'aluguel-dados': 'Detalhes do aluguel', 'aluguel-revisao': 'Revisar solicitação', 'aluguel-confirmacao': 'Solicitação enviada', 'aluguel-detalhe': 'Detalhes da solicitação' };
-  document.title = titulos[tela] + ' · Sítio Raio de Sol';
+  document.title = (titulos[tela] || 'Administração') + ' · Sítio Raio de Sol';
   fecharMenu();
   if (tela !== 'login') selecionar('#login-password').value = '';
   if (tela !== 'cadastro') {
@@ -214,6 +222,7 @@ function atualizarConta() {
   selecionar('#account').hidden = !conectado;
   selecionar('#account-name').textContent = conectado ? 'Olá, ' + usuarioLogado.nome.split(' ')[0] : '';
   document.querySelectorAll('[data-client]').forEach(function (link) { link.hidden = !conectado; });
+  document.querySelectorAll('[data-admin]').forEach(function (link) { link.hidden = !ehAdministrador(); });
 }
 selecionar('#login-form').addEventListener('submit', function (evento) {
   evento.preventDefault();
@@ -233,7 +242,7 @@ selecionar('#login-form').addEventListener('submit', function (evento) {
   usuarioLogado = encontrado;
   atualizarConta();
   this.reset();
-  location.hash = '#' + retornoLogin;
+  location.hash = '#' + (ehAdministrador() && retornoLogin === 'perfil' ? 'admin' : retornoLogin);
   retornoLogin = 'perfil';
   mostrarAviso('Bem-vindo, ' + encontrado.nome.split(' ')[0] + '! Login de demonstração realizado.');
 });
@@ -252,7 +261,7 @@ let recuperacao = null;
 let rascunhoAluguel = null;
 const alugueis = [];
 // Valor fictício em centavos, definido ANTES da solicitação.
-// Futuramente esta configuração virá da área administrativa.
+// A área administrativa altera a diária para novas seleções de datas.
 const configuracaoAluguel = { diariaCentavos: 50000 };
 function formatarValor(centavos) {
   return (centavos / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -486,8 +495,8 @@ function quantidadeDias(inicio, fim) {
   return Math.round((Date.UTC(b.getFullYear(), b.getMonth(), b.getDate()) - Date.UTC(a.getFullYear(), a.getMonth(), a.getDate())) / 86400000) + 1;
 }
 function diaOcupado(dia) {
-  return diasExemplo.includes(dia) || alugueis.some(function (aluguel) {
-    return aluguel.status !== 'cancelada' && dia >= aluguel.inicio && dia <= aluguel.fim;
+  return diasExemplo.includes(dia) || bloqueiosAgenda.some(function (bloqueio) { return dia >= bloqueio.inicio && dia <= bloqueio.fim; }) || alugueis.some(function (aluguel) {
+    return ['pendente', 'aprovada'].includes(aluguel.status) && dia >= aluguel.inicio && dia <= aluguel.fim;
   });
 }
 function erroPeriodo(inicio, fim) {
@@ -676,7 +685,7 @@ function meuAluguel(id) {
   return meusAlugueis().find(function (aluguel) { return aluguel.id === id; });
 }
 function textoStatus(status) {
-  return status === 'cancelada' ? 'Cancelada' : 'Aguardando aprovação';
+  return { pendente: 'Aguardando aprovação', aprovada: 'Aprovada', recusada: 'Recusada', cancelada: 'Cancelada' }[status] || status;
 }
 function renderizarHistorico() {
   const lista = meusAlugueis();
@@ -716,6 +725,8 @@ function renderizarDetalhe(aluguel) {
   selecionar('#cancel-rental').hidden = aluguel.status !== 'pendente';
   selecionar('#detail-message').textContent = aluguel.status === 'cancelada'
     ? 'Esta solicitação foi cancelada. Você pode escolher novas datas e criar outro pedido.'
+    : aluguel.status === 'aprovada' ? 'Sua reserva foi aprovada. ' + (aluguel.motivo || '')
+    : aluguel.status === 'recusada' ? 'Solicitação recusada. Motivo: ' + aluguel.motivo
     : 'Seu pedido aguarda análise. Você pode cancelar a solicitação enquanto estiver pendente.';
 }
 selecionar('#cancel-rental').addEventListener('click', function () {
@@ -729,6 +740,7 @@ selecionar('#confirm-cancellation').addEventListener('click', function () {
   const aluguel = meuAluguel(cancelamentoSelecionado);
   if (aluguel && aluguel.status === 'pendente') {
     aluguel.status = 'cancelada';
+    notificarCliente(aluguel, 'Solicitação cancelada. O período foi liberado.');
     renderizarDetalhe(aluguel);
     mostrarAviso('Solicitação cancelada. O período ficou disponível novamente.');
   }
@@ -750,17 +762,22 @@ function limparSessao() {
   retornoLogin = 'perfil';
 }
 function prepararTela(tela) {
+  if (tela.startsWith('admin')) prepararAdministracao(tela);
   if (tela !== 'recuperar') limparRecuperacao();
   if (tela !== 'perfil') selecionar('#profile-password-form').reset();
   selecionar('#cancel-dialog').close();
   if (tela === 'perfil' && usuarioLogado) {
     preencherPerfil();
     const verAlugueis = location.hash === '#perfil/alugueis';
-    selecionar('#profile-data').hidden = verAlugueis;
+    const verNotificacoes = location.hash === '#perfil/notificacoes';
+    selecionar('#profile-data').hidden = verAlugueis || verNotificacoes;
+    selecionar('#profile-notifications').hidden = !verNotificacoes;
     selecionar('#profile-rentals').hidden = !verAlugueis;
     selecionar('#profile-data-link').removeAttribute('aria-current');
     selecionar('#profile-rentals-link').removeAttribute('aria-current');
-    selecionar(verAlugueis ? '#profile-rentals-link' : '#profile-data-link').setAttribute('aria-current', 'page');
+    selecionar('#profile-notifications-link').removeAttribute('aria-current');
+    selecionar(verNotificacoes ? '#profile-notifications-link' : verAlugueis ? '#profile-rentals-link' : '#profile-data-link').setAttribute('aria-current', 'page');
+    if (verNotificacoes) renderizarNotificacoes();
     if (verAlugueis) {
       selecionar('#profile-password-form').reset();
       renderizarHistorico();
@@ -799,5 +816,169 @@ function prepararTela(tela) {
   }
   return true;
 }
+
+// ADMINISTRAÇÃO DEMONSTRATIVA — permissões e dados somente nesta página.
+const bloqueiosAgenda = [];
+const notificacoes = [];
+function ehAdministrador() {
+  return Boolean(usuarioLogado && usuarioLogado.papel === 'admin');
+}
+function notificarCliente(aluguel, texto) {
+  notificacoes.unshift({ email: aluguel.detalhes.email, pedido: aluguel.id,
+    texto: texto, data: new Date().toLocaleString('pt-BR') });
+}
+function renderizarNotificacoes() {
+  const destino = selecionar('#notifications-list');
+  destino.replaceChildren();
+  const minhas = notificacoes.filter(function (item) { return usuarioLogado && item.email === usuarioLogado.email; });
+  if (!minhas.length) destino.append(criarElemento('p', 'Você ainda não tem notificações.', 'panel'));
+  minhas.forEach(function (item) {
+    const card = criarElemento('article', undefined, 'panel');
+    const link = criarElemento('a', 'Ver solicitação ' + item.pedido + ' →', 'back-link');
+    link.href = '#aluguel-detalhe/' + item.pedido;
+    card.append(criarElemento('small', item.data), criarElemento('p', item.texto), link);
+    destino.append(card);
+  });
+}
+function linkAdministrativo(texto, destino) {
+  const link = criarElemento('a', texto, 'button outline');
+  link.href = destino;
+  return link;
+}
+function renderizarPainelAdmin() {
+  selecionar('#admin-pending').textContent = alugueis.filter(function (a) { return a.status === 'pendente'; }).length;
+  selecionar('#admin-approved').textContent = alugueis.filter(function (a) { return a.status === 'aprovada'; }).length;
+  selecionar('#admin-rate').textContent = formatarValor(configuracaoAluguel.diariaCentavos);
+  const proximos = alugueis.filter(function (a) { return a.status === 'aprovada' && a.fim >= dataISO(hojeAgenda); })
+    .sort(function (a, b) { return a.inicio.localeCompare(b.inicio); });
+  const lista = selecionar('#admin-upcoming');
+  lista.replaceChildren();
+  if (!proximos.length) lista.append(criarElemento('p', 'Nenhum aluguel aprovado por enquanto.', 'panel'));
+  proximos.forEach(function (a) {
+    const card = criarElemento('article', undefined, 'panel rental-card');
+    card.append(criarElemento('p', a.detalhes.nome + ' · ' + textoPeriodo(a.inicio, a.fim)), linkAdministrativo(a.id + ' →', '#admin-pedidos/' + a.id));
+    lista.append(card);
+  });
+}
+function renderizarPedidosAdmin() {
+  const filtro = selecionar('#admin-filter').value || 'todos';
+  const lista = selecionar('#admin-orders');
+  lista.replaceChildren();
+  const pedidos = alugueis.filter(function (a) { return filtro === 'todos' || a.status === filtro; }).slice().reverse();
+  if (!pedidos.length) lista.append(criarElemento('p', 'Nenhuma solicitação neste filtro.', 'panel'));
+  pedidos.forEach(function (a) {
+    const card = criarElemento('article', undefined, 'panel rental-card');
+    const texto = criarElemento('div');
+    texto.append(criarElemento('h2', a.id + ' · ' + a.detalhes.nome), criarElemento('p', textoPeriodo(a.inicio, a.fim)), criarElemento('p', textoPreco(a.preco)), criarElemento('span', textoStatus(a.status), 'pill ' + a.status));
+    card.append(texto, linkAdministrativo('Analisar pedido →', '#admin-pedidos/' + a.id));
+    lista.append(card);
+  });
+  const pedido = alugueis.find(function (a) { return a.id === location.hash.split('/')[1]; });
+  selecionar('#admin-order-panel').hidden = !pedido;
+  if (!pedido) return;
+  selecionar('#admin-order-title').textContent = 'Solicitação ' + pedido.id;
+  preencherDetalhes('admin-order-details', [['Status', textoStatus(pedido.status)], ...paresAluguel(pedido), ['Observação do administrador', pedido.motivo || '—']]);
+  selecionar('#admin-decision-form').hidden = pedido.status !== 'pendente';
+  selecionar('#admin-decision-form').reset();
+  exibirMensagem('admin-decision-message', '');
+}
+// Toda alteração verifica o papel novamente, além da proteção das telas.
+function decidirPedido(id, decisao, motivo) {
+  if (!ehAdministrador()) return 'Acesso exclusivo do administrador.';
+  const pedido = alugueis.find(function (a) { return a.id === id; });
+  if (!pedido || pedido.status !== 'pendente') return 'Este pedido não está mais pendente.';
+  if (!['aprovada', 'recusada'].includes(decisao)) return 'Escolha aprovar ou recusar.';
+  motivo = motivo.trim();
+  if (motivo.length > 500) return 'Use até 500 caracteres na observação.';
+  if (decisao === 'recusada' && !motivo) return 'Informe o motivo da recusa.';
+  if (decisao === 'aprovada') {
+    if (pedido.inicio < dataISO(hojeAgenda)) return 'Não é possível aprovar um período passado.';
+    const conflita = alugueis.some(function (a) { return a.id !== id && ['pendente', 'aprovada'].includes(a.status) && a.inicio <= pedido.fim && a.fim >= pedido.inicio; });
+    const bloqueado = bloqueiosAgenda.some(function (b) { return b.inicio <= pedido.fim && b.fim >= pedido.inicio; }) || diasExemplo.some(function (dia) { return dia >= pedido.inicio && dia <= pedido.fim; });
+    if (conflita || bloqueado) return 'Há conflito de datas. Revise a agenda antes de aprovar.';
+  }
+  pedido.status = decisao;
+  pedido.motivo = motivo;
+  notificarCliente(pedido, 'Solicitação ' + id + ': ' + textoStatus(decisao) + (motivo ? '. ' + motivo : '.'));
+  return '';
+}
+selecionar('#admin-decision-form').addEventListener('submit', function (evento) {
+  evento.preventDefault();
+  const erro = decidirPedido(location.hash.split('/')[1], selecionar('#admin-decision').value, selecionar('#admin-reason').value);
+  if (erro) { exibirMensagem('admin-decision-message', erro); return; }
+  renderizarPedidosAdmin();
+  mostrarAviso('Decisão registrada. O cliente já pode acompanhar pelo perfil.');
+});
+selecionar('#admin-filter').addEventListener('change', function () { if (ehAdministrador()) renderizarPedidosAdmin(); });
+selecionar('#admin-price-form').addEventListener('submit', function (evento) {
+  evento.preventDefault();
+  if (!ehAdministrador()) return;
+  const valor = Number(selecionar('#admin-daily-price').value);
+  if (!Number.isFinite(valor) || valor <= 0 || valor > 1000000 || Math.abs(valor * 100 - Math.round(valor * 100)) > 0.00001) {
+    exibirMensagem('admin-price-message', 'Informe uma diária positiva de até R$ 1.000.000,00, com no máximo duas casas decimais.'); return;
+  }
+  configuracaoAluguel.diariaCentavos = Math.round(valor * 100);
+  exibirMensagem('admin-price-message', 'Diária atualizada. Novas seleções usam esse preço; pedidos já enviados mantêm o valor registrado.', true);
+});
+function adicionarBloqueio(inicio, fim, motivo) {
+  if (!ehAdministrador()) return 'Acesso exclusivo do administrador.';
+  const erro = erroPeriodo(inicio, fim);
+  if (erro) return erro;
+  if (!motivo.trim() || motivo.trim().length > 200) return 'Informe um motivo com até 200 caracteres.';
+  bloqueiosAgenda.push({ inicio: inicio, fim: fim, motivo: motivo.trim() });
+  return '';
+}
+selecionar('#admin-block-form').addEventListener('submit', function (evento) {
+  evento.preventDefault();
+  const erro = adicionarBloqueio(selecionar('#admin-block-start').value, selecionar('#admin-block-end').value, selecionar('#admin-block-reason').value);
+  if (erro) { exibirMensagem('admin-block-message', erro); return; }
+  this.reset();
+  renderizarAgendaAdmin();
+  exibirMensagem('admin-block-message', 'Período bloqueado para novos pedidos.', true);
+});
+function renderizarAgendaAdmin() {
+  selecionar('#admin-daily-price').value = (configuracaoAluguel.diariaCentavos / 100).toFixed(2);
+  const lista = selecionar('#admin-blocks');
+  lista.replaceChildren();
+  function linha(texto, remover) {
+    const card = criarElemento('div', undefined, 'panel rental-card');
+    const botao = criarElemento('button', 'Liberar período', 'button outline');
+    botao.type = 'button';
+    botao.addEventListener('click', function () {
+      if (!ehAdministrador()) return;
+      remover(); renderizarAgendaAdmin(); mostrarAviso('Período liberado.');
+    });
+    card.append(criarElemento('p', texto), botao);
+    lista.append(card);
+  }
+  bloqueiosAgenda.forEach(function (b) { linha(textoPeriodo(b.inicio, b.fim) + ' · ' + b.motivo, function () { bloqueiosAgenda.splice(bloqueiosAgenda.indexOf(b), 1); }); });
+  diasExemplo.forEach(function (dia) { linha(formatarData(dia) + ' · Bloqueio de exemplo', function () { diasExemplo.splice(diasExemplo.indexOf(dia), 1); }); });
+  if (!lista.children.length) lista.append(criarElemento('p', 'Nenhum bloqueio manual.'));
+  const ocupados = selecionar('#admin-occupied');
+  ocupados.replaceChildren();
+  const ativos = alugueis.filter(function (a) { return ['pendente', 'aprovada'].includes(a.status) && a.fim >= dataISO(hojeAgenda); })
+    .sort(function (a, b) { return a.inicio.localeCompare(b.inicio); });
+  ativos.forEach(function (a) { ocupados.append(linkAdministrativo(textoPeriodo(a.inicio, a.fim) + ' · ' + textoStatus(a.status) + ' · ' + a.id, '#admin-pedidos/' + a.id)); });
+  if (!ativos.length) ocupados.append(criarElemento('p', 'Nenhum período ocupado por solicitações.'));
+}
+function prepararAdministracao(tela) {
+  if (!ehAdministrador()) return;
+  document.querySelectorAll('[data-admin-nav]').forEach(function (link) {
+    if (link.dataset.adminNav === tela) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
+  });
+  if (tela === 'admin') renderizarPainelAdmin();
+  if (tela === 'admin-pedidos') renderizarPedidosAdmin();
+  if (tela === 'admin-agenda') {
+    renderizarAgendaAdmin();
+    exibirMensagem('admin-price-message', '');
+    exibirMensagem('admin-block-message', '');
+    ['admin-block-start', 'admin-block-end'].forEach(function (id) {
+      selecionar('#' + id).min = dataISO(hojeAgenda);
+      selecionar('#' + id).max = dataISO(limiteAgenda);
+    });
+  }
+}
+// Inicializa depois que todas as variáveis e eventos estão prontos.
 mostrarTela(false);
 atualizarConta();
