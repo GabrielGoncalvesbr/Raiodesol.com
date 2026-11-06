@@ -11,7 +11,7 @@ Email: clienteteste@gmail.com
 Senha: Teste12@
 
 ## Conta Teste Adiministrador
-Conta administrativa: adminteste@example.com
+Conta administrativa: adminteste@example.com     
 Senha: Admin12@
 
 ## Arquivos
