@@ -1439,3 +1439,20 @@ nav.admin-tabs > a[aria-current="page"]:not(.button) { background: var(--green);
   .admin-tabs { display: flex; width: 100%; }
   nav.admin-tabs > a:not(.button) { flex: 1; text-align: center; padding: 10px; }
 }
+
+/* Preços por data e dias reservados à limpeza. */
+.calendar-day { min-height: 62px; }
+.day-price { display: block; font-size: 10px; line-height: 1.2; margin-top: 4px; font-weight: 400; }
+.calendar-day.cleaning { background: #fff1cf; color: #73571a; opacity: 1; border-color: #e9d397; }
+.legend-cleaning { background: #fff1cf; border: 1px solid #e9d397; }
+.price-breakdown { font: inherit; font-size: 12px; white-space: pre-wrap; line-height: 1.8; max-height: 240px; overflow-y: auto; }
+.price-breakdown:empty { display: none; }
+.details-grid dd { white-space: pre-line; }
+.special-pricing { margin-top: 24px; }
+#admin-price-form .field { margin-bottom: 18px; }
+.holiday-info { margin: 18px 0; font-size: 13px; line-height: 1.7; }
+.holiday-info summary { cursor: pointer; font-weight: 600; }
+@media (max-width: 760px) {
+  .calendar-day { min-height: 54px; }
+  .day-price { font-size: 8px; overflow-wrap: anywhere; }
+}

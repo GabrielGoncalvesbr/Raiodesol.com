@@ -265,3 +265,79 @@ test('agenda administrativa valida bloqueios e diária e não sobrepõe pedidos'
   a.acionar('admin-price-form');
   assert.equal(a.executar('configuracaoAluguel.diariaCentavos'),50000);
 });
+
+test('limpeza bloqueia um dia antes/depois, permite dia compartilhado e acompanha cancelamento', () => {
+  const a = ambiente();
+  a.executar(`diasExemplo.length=0;
+    const inicioLimpeza=dataISO(new Date(hojeAgenda.getFullYear(),hojeAgenda.getMonth()+1,1,12));
+    alugueis.push({id:'A',inicio:inicioLimpeza,fim:deslocarDia(inicioLimpeza,2),status:'pendente'});`);
+  assert.equal(a.executar("motivoOcupacao(deslocarDia(inicioLimpeza,-1))"),'Limpeza');
+  assert.equal(a.executar("motivoOcupacao(deslocarDia(inicioLimpeza,3))"),'Limpeza');
+  assert.ok(a.executar("erroPeriodo(deslocarDia(inicioLimpeza,-1),deslocarDia(inicioLimpeza,-1))"));
+  assert.ok(a.executar("erroPeriodo(deslocarDia(inicioLimpeza,3),deslocarDia(inicioLimpeza,3))"));
+  assert.equal(a.executar("erroPeriodo(deslocarDia(inicioLimpeza,4),deslocarDia(inicioLimpeza,4))"),'');
+  a.executar("alugueis.push({id:'B',inicio:deslocarDia(inicioLimpeza,4),fim:deslocarDia(inicioLimpeza,4),status:'aprovada'}); alugueis[0].status='cancelada';");
+  assert.equal(a.executar("motivoOcupacao(deslocarDia(inicioLimpeza,3))"),'Limpeza');
+  assert.equal(a.executar("diaOcupado(deslocarDia(inicioLimpeza,-1))"),false);
+  a.executar("alugueis[1].status='recusada';");
+  assert.equal(a.executar("diaOcupado(deslocarDia(inicioLimpeza,3))"),false);
+  assert.equal(a.executar("deslocarDia('2027-01-01',-1)"),'2026-12-31');
+  assert.equal(a.executar("deslocarDia('2028-03-01',-1)"),'2028-02-29');
+});
+
+test('aprovação rejeita conflito com limpeza de outro pedido e ignora a própria limpeza', () => {
+  const a=ambiente();
+  a.executar(`usuarioLogado=usuarios.find(u=>u.papel==='admin'); diasExemplo.length=0;
+    const primeiro=dataISO(new Date(hojeAgenda.getFullYear(),hojeAgenda.getMonth()+1,5,12));
+    alugueis.push({id:'A',inicio:primeiro,fim:primeiro,status:'aprovada'},
+      {id:'B',inicio:deslocarDia(primeiro,1),fim:deslocarDia(primeiro,1),status:'pendente',detalhes:{email:'um@example.com'}});`);
+  assert.ok(a.executar("decidirPedido('B','aprovada','')"));
+  a.executar("alugueis[1].inicio=deslocarDia(primeiro,2); alugueis[1].fim=deslocarDia(primeiro,2);");
+  assert.equal(a.executar("decidirPedido('B','aprovada','')"),'');
+});
+
+test('preços respeitam data específica > feriado > fim de semana > padrão e somam por dia', () => {
+  const a=ambiente();
+  a.executar('configuracaoAluguel.fimSemanaCentavos=70000; configuracaoAluguel.feriadoCentavos=90000;');
+  assert.equal(a.executar("precoDoDia('2026-11-13').centavos"),50000);
+  assert.equal(a.executar("precoDoDia('2026-11-14').centavos"),70000);
+  assert.equal(a.executar("precoDoDia('2026-11-15').centavos"),90000);
+  assert.equal(a.executar("calcularPreco('2026-11-13','2026-11-15').totalCentavos"),210000);
+  assert.equal(a.executar("calcularPreco('2026-11-13','2026-11-15').diariaCentavos"),null);
+  a.executar("configuracaoAluguel.datas['2026-11-15']=100001; const cotacaoSalva=calcularPreco('2026-11-13','2026-11-15');");
+  assert.equal(a.executar('cotacaoSalva.totalCentavos'),220001);
+  assert.equal(a.executar('cotacaoSalva.dias.length'),3);
+  a.executar("configuracaoAluguel.datas['2026-11-15']=80000; configuracaoAluguel.diariaCentavos=10000;");
+  assert.equal(a.executar('cotacaoSalva.totalCentavos'),220001);
+  assert.equal(a.executar('cotacaoSalva.dias[2].centavos'),100001);
+  a.executar("delete configuracaoAluguel.datas['2026-11-15']; configuracaoAluguel.feriadoCentavos=null;");
+  assert.equal(a.executar("precoDoDia('2026-11-15').centavos"),70000);
+  for (const dia of ['2026-01-01','2026-04-03','2026-04-21','2026-05-01','2026-09-07','2026-10-12','2026-11-02','2026-11-15','2026-11-20','2026-12-25','2027-03-26','2028-04-14']) {
+    assert.ok(a.executar(`nomeFeriado('${dia}')`),dia);
+  }
+  for (const dia of ['2026-02-17','2026-06-04','2026-12-24']) assert.equal(a.executar(`nomeFeriado('${dia}')`),'');
+});
+
+test('admin edita e remove exceções, valida preços e impede alterações de clientes', () => {
+  const a=ambiente();
+  a.executar('const dataTarifa=dataISO(hojeAgenda); usuarioLogado=usuarios[0];');
+  assert.ok(a.executar("definirPrecoEspecifico(dataTarifa,dataTarifa,'850')"));
+  a.executar("usuarioLogado=usuarios.find(u=>u.papel==='admin');");
+  assert.ok(a.executar("definirPrecoEspecifico('2026-02-30',dataTarifa,'850')"));
+  assert.ok(a.executar("definirPrecoEspecifico(dataTarifa,dataTarifa,'-1')"));
+  assert.equal(a.executar("definirPrecoEspecifico(dataTarifa,deslocarDia(dataTarifa,1),'850.25')"),'');
+  assert.equal(a.executar('precoDoDia(dataTarifa).centavos'),85025);
+  assert.equal(a.executar("definirPrecoEspecifico(dataTarifa,dataTarifa,'950')"),'');
+  a.executar('renderizarPrecosEspecificos();');
+  a.obter('#admin-special-prices').children[0].children[1].children[1].handlers.click();
+  assert.equal(a.executar('Object.keys(configuracaoAluguel.datas).length'),1);
+  a.obter('#admin-daily-price').value='600';
+  a.obter('#admin-weekend-price').value='700';
+  a.obter('#admin-holiday-price').value='0';
+  a.acionar('admin-price-form');
+  assert.equal(a.executar('configuracaoAluguel.diariaCentavos'),50000);
+  a.obter('#admin-holiday-price').value='900';
+  a.acionar('admin-price-form');
+  assert.equal(a.executar('configuracaoAluguel.fimSemanaCentavos'),70000);
+  assert.equal(a.executar('configuracaoAluguel.feriadoCentavos'),90000);
+});

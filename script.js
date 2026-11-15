@@ -262,18 +262,59 @@ let rascunhoAluguel = null;
 const alugueis = [];
 // Valor fictício em centavos, definido ANTES da solicitação.
 // A área administrativa altera a diária para novas seleções de datas.
-const configuracaoAluguel = { diariaCentavos: 50000 };
+const configuracaoAluguel = { diariaCentavos: 50000, fimSemanaCentavos: null, feriadoCentavos: null, datas: {} };
 function formatarValor(centavos) {
   return (centavos / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 function calcularPreco(inicio, fim) {
+  const dias = [];
+  for (let dia = inicio; dia <= fim; dia = deslocarDia(dia, 1)) {
+    dias.push({ data: dia, ...precoDoDia(dia) });
+  }
+  const diariaUnica = dias.every(function (dia) { return dia.centavos === dias[0].centavos; });
   return {
-    diariaCentavos: configuracaoAluguel.diariaCentavos,
-    totalCentavos: configuracaoAluguel.diariaCentavos * quantidadeDias(inicio, fim)
+    diariaCentavos: diariaUnica && dias.length ? dias[0].centavos : null,
+    dias: dias,
+    totalCentavos: dias.reduce(function (total, dia) { return total + dia.centavos; }, 0)
   };
 }
 function textoPreco(preco) {
-  return formatarValor(preco.diariaCentavos) + ' por dia · Total: ' + formatarValor(preco.totalCentavos);
+  return (preco.diariaCentavos === null ? 'Diárias conforme as datas' : formatarValor(preco.diariaCentavos) + ' por dia') + ' · Total: ' + formatarValor(preco.totalCentavos);
+}
+// Datas civis ao meio-dia evitam deslocamentos de fuso ao somar dias.
+function deslocarDia(texto, quantidade) {
+  const data = lerData(texto);
+  data.setDate(data.getDate() + quantidade);
+  return dataISO(data);
+}
+// Calendário federal: nove datas fixas e Paixão de Cristo (Páscoa menos dois dias).
+// Fonte: https://agenciagov.ebc.com.br/noticias/202512/confira-o-calendario-oficial-de-feriados-nacionais-e-pontos-facultativos-em-2026
+function nomeFeriado(texto) {
+  const fixos = { '01-01': 'Confraternização Universal', '04-21': 'Tiradentes', '05-01': 'Dia do Trabalho', '09-07': 'Independência do Brasil', '10-12': 'Nossa Senhora Aparecida', '11-02': 'Finados', '11-15': 'Proclamação da República', '11-20': 'Consciência Negra', '12-25': 'Natal' };
+  if (fixos[texto.slice(5)]) return fixos[texto.slice(5)];
+  // Cálculo da Páscoa no calendário gregoriano (Meeus/Jones/Butcher).
+  const ano = Number(texto.slice(0, 4));
+  const a = ano % 19, b = Math.floor(ano / 100), c = ano % 100;
+  const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const mes = Math.floor((h + l - 7 * m + 114) / 31);
+  const dia = (h + l - 7 * m + 114) % 31 + 1;
+  const pascoa = dataISO(new Date(ano, mes - 1, dia, 12));
+  return texto === deslocarDia(pascoa, -2) ? 'Paixão de Cristo' : '';
+}
+function precoDoDia(dia) {
+  const config = configuracaoAluguel;
+  if (Object.prototype.hasOwnProperty.call(config.datas, dia)) return { centavos: config.datas[dia], regra: 'Data específica' };
+  const feriado = nomeFeriado(dia);
+  if (feriado && config.feriadoCentavos !== null) return { centavos: config.feriadoCentavos, regra: feriado };
+  const semana = lerData(dia).getDay();
+  if ((semana === 0 || semana === 6) && config.fimSemanaCentavos !== null) return { centavos: config.fimSemanaCentavos, regra: 'Fim de semana' };
+  return { centavos: config.diariaCentavos, regra: 'Diária padrão' };
+}
+function detalharDiarias(preco) {
+  return (preco.dias || []).map(function (dia) { return formatarData(dia.data) + ': ' + formatarValor(dia.centavos) + ' · ' + dia.regra; }).join('\n');
 }
 let proximoProtocolo = 1;
 let ultimoAluguel = null;
@@ -494,10 +535,15 @@ function quantidadeDias(inicio, fim) {
   const a = lerData(inicio), b = lerData(fim);
   return Math.round((Date.UTC(b.getFullYear(), b.getMonth(), b.getDate()) - Date.UTC(a.getFullYear(), a.getMonth(), a.getDate())) / 86400000) + 1;
 }
-function diaOcupado(dia) {
-  return diasExemplo.includes(dia) || bloqueiosAgenda.some(function (bloqueio) { return dia >= bloqueio.inicio && dia <= bloqueio.fim; }) || alugueis.some(function (aluguel) {
-    return ['pendente', 'aprovada'].includes(aluguel.status) && dia >= aluguel.inicio && dia <= aluguel.fim;
-  });
+function motivoOcupacao(dia, ignorarPedido) {
+  const ativos = alugueis.filter(function (a) { return (!ignorarPedido || a.id !== ignorarPedido) && ['pendente', 'aprovada'].includes(a.status); });
+  if (ativos.some(function (a) { return dia >= a.inicio && dia <= a.fim; })) return 'Reservado';
+  if (ativos.some(function (a) { return dia === deslocarDia(a.inicio, -1) || dia === deslocarDia(a.fim, 1); })) return 'Limpeza';
+  if (diasExemplo.includes(dia) || bloqueiosAgenda.some(function (b) { return dia >= b.inicio && dia <= b.fim; })) return 'Bloqueado';
+  return '';
+}
+function diaOcupado(dia, ignorarPedido) {
+  return Boolean(motivoOcupacao(dia, ignorarPedido));
 }
 function erroPeriodo(inicio, fim) {
   if (!lerData(inicio) || !lerData(fim)) return 'Escolha o primeiro e o último dia.';
@@ -523,7 +569,8 @@ function atualizarSelecao() {
   selecionar('#dates-message').textContent = inicio && fim ? erroPeriodo(inicio, fim) : '';
   selecionar('#dates-price').textContent = inicio && fim && !erroPeriodo(inicio, fim)
     ? textoPreco(calcularPreco(inicio, fim))
-    : formatarValor(configuracaoAluguel.diariaCentavos) + ' por dia';
+    : 'Diária padrão: ' + formatarValor(configuracaoAluguel.diariaCentavos) + '. Selecione as datas para calcular o total.';
+  selecionar('#dates-breakdown').textContent = inicio && fim && !erroPeriodo(inicio, fim) ? detalharDiarias(calcularPreco(inicio, fim)) : '';
 }
 function renderizarCalendario() {
   const inicio = selecionar('#rental-start').value;
@@ -549,8 +596,15 @@ function renderizarCalendario() {
     botao.disabled = passado || ocupado;
     botao.classList.toggle('selected', Boolean(selecionado));
     botao.classList.toggle('busy', ocupado);
+    const motivo = motivoOcupacao(dia);
+    botao.classList.toggle('cleaning', motivo === 'Limpeza');
     botao.setAttribute('aria-pressed', String(Boolean(selecionado)));
-    botao.setAttribute('aria-label', formatarData(dia) + (passado ? ', data passada' : ocupado ? ', indisponível' : ', disponível'));
+    const preco = precoDoDia(dia);
+    const descricao = formatarData(dia) + (passado ? ', data passada' : ocupado ? ', ' + motivo : ', disponível, ' + formatarValor(preco.centavos) + ', ' + preco.regra) + (nomeFeriado(dia) ? ', ' + nomeFeriado(dia) : '');
+    botao.setAttribute('aria-label', descricao);
+    botao.title = descricao;
+    if (!passado && !ocupado) botao.append(criarElemento('small', formatarValor(preco.centavos), 'day-price'));
+    if (!passado && motivo === 'Limpeza') botao.append(criarElemento('small', 'Limpeza', 'day-price'));
     if (dia === dataISO(hojeAgenda)) botao.setAttribute('aria-current', 'date');
     botao.addEventListener('click', function () {
       if (!inicio || fim || dia < inicio) {
@@ -643,8 +697,9 @@ function paresAluguel(aluguel) {
   return [
     ['Período', textoPeriodo(aluguel.inicio, aluguel.fim)],
     ['Modalidade', 'Aluguel por dia'],
-    ['Diária', formatarValor(aluguel.preco.diariaCentavos)],
+    ['Diárias do período', detalharDiarias(aluguel.preco)],
     ['Total do período', formatarValor(aluguel.preco.totalCentavos)],
+    ['Limpeza (sem cobrança)', formatarData(deslocarDia(aluguel.inicio, -1)) + ' e ' + formatarData(deslocarDia(aluguel.fim, 1))],
     ['Responsável', aluguel.detalhes.nome],
     ['E-mail', aluguel.detalhes.email],
     ['Telefone', aluguel.detalhes.telefone],
@@ -893,9 +948,9 @@ function decidirPedido(id, decisao, motivo) {
   if (decisao === 'recusada' && !motivo) return 'Informe o motivo da recusa.';
   if (decisao === 'aprovada') {
     if (pedido.inicio < dataISO(hojeAgenda)) return 'Não é possível aprovar um período passado.';
-    const conflita = alugueis.some(function (a) { return a.id !== id && ['pendente', 'aprovada'].includes(a.status) && a.inicio <= pedido.fim && a.fim >= pedido.inicio; });
-    const bloqueado = bloqueiosAgenda.some(function (b) { return b.inicio <= pedido.fim && b.fim >= pedido.inicio; }) || diasExemplo.some(function (dia) { return dia >= pedido.inicio && dia <= pedido.fim; });
-    if (conflita || bloqueado) return 'Há conflito de datas. Revise a agenda antes de aprovar.';
+    for (let dia = pedido.inicio; dia <= pedido.fim; dia = deslocarDia(dia, 1)) {
+      if (diaOcupado(dia, id)) return 'Há conflito de reserva, limpeza ou bloqueio. Revise a agenda antes de aprovar.';
+    }
   }
   pedido.status = decisao;
   pedido.motivo = motivo;
@@ -910,16 +965,71 @@ selecionar('#admin-decision-form').addEventListener('submit', function (evento) 
   mostrarAviso('Decisão registrada. O cliente já pode acompanhar pelo perfil.');
 });
 selecionar('#admin-filter').addEventListener('change', function () { if (ehAdministrador()) renderizarPedidosAdmin(); });
+function valorEmCentavos(texto, opcional = false) {
+  if (opcional && texto.trim() === '') return null;
+  const valor = Number(texto);
+  if (!Number.isFinite(valor) || valor <= 0 || valor > 1000000 || Math.abs(valor * 100 - Math.round(valor * 100)) > 0.00001) return NaN;
+  return Math.round(valor * 100);
+}
 selecionar('#admin-price-form').addEventListener('submit', function (evento) {
   evento.preventDefault();
   if (!ehAdministrador()) return;
-  const valor = Number(selecionar('#admin-daily-price').value);
-  if (!Number.isFinite(valor) || valor <= 0 || valor > 1000000 || Math.abs(valor * 100 - Math.round(valor * 100)) > 0.00001) {
-    exibirMensagem('admin-price-message', 'Informe uma diária positiva de até R$ 1.000.000,00, com no máximo duas casas decimais.'); return;
+  const padrao = valorEmCentavos(selecionar('#admin-daily-price').value);
+  const fimSemana = valorEmCentavos(selecionar('#admin-weekend-price').value, true);
+  const feriado = valorEmCentavos(selecionar('#admin-holiday-price').value, true);
+  if ([padrao, fimSemana, feriado].some(Number.isNaN)) {
+    exibirMensagem('admin-price-message', 'Use valores positivos de até R$ 1.000.000,00, com no máximo duas casas decimais. Fim de semana e feriado podem ficar vazios.'); return;
   }
-  configuracaoAluguel.diariaCentavos = Math.round(valor * 100);
-  exibirMensagem('admin-price-message', 'Diária atualizada. Novas seleções usam esse preço; pedidos já enviados mantêm o valor registrado.', true);
+  configuracaoAluguel.diariaCentavos = padrao;
+  configuracaoAluguel.fimSemanaCentavos = fimSemana;
+  configuracaoAluguel.feriadoCentavos = feriado;
+  exibirMensagem('admin-price-message', 'Regras salvas. Novas seleções usam esses preços; pedidos já enviados mantêm os valores registrados.', true);
 });
+function definirPrecoEspecifico(inicio, fim, valor) {
+  if (!ehAdministrador()) return 'Acesso exclusivo do administrador.';
+  if (!lerData(inicio) || !lerData(fim) || inicio < dataISO(hojeAgenda) || fim < inicio || fim > dataISO(limiteAgenda)) return 'Escolha um período válido entre hoje e ' + formatarData(dataISO(limiteAgenda)) + '.';
+  const centavos = valorEmCentavos(valor);
+  if (Number.isNaN(centavos)) return 'Informe um valor positivo de até R$ 1.000.000,00 com até duas casas decimais.';
+  for (let dia = inicio; dia <= fim; dia = deslocarDia(dia, 1)) configuracaoAluguel.datas[dia] = centavos;
+  return '';
+}
+selecionar('#admin-special-price-form').addEventListener('submit', function (evento) {
+  evento.preventDefault();
+  const erro = definirPrecoEspecifico(selecionar('#admin-special-start').value, selecionar('#admin-special-end').value, selecionar('#admin-special-price').value);
+  if (erro) { exibirMensagem('admin-special-message', erro); return; }
+  renderizarPrecosEspecificos();
+  exibirMensagem('admin-special-message', 'Preço aplicado às datas selecionadas. Pedidos existentes não foram alterados.', true);
+});
+function renderizarPrecosEspecificos() {
+  const lista = selecionar('#admin-special-prices');
+  lista.replaceChildren();
+  const datas = Object.keys(configuracaoAluguel.datas).sort();
+  if (!datas.length) lista.append(criarElemento('p', 'Nenhuma data com preço específico.'));
+  datas.forEach(function (dia) {
+    const item = criarElemento('div', undefined, 'panel rental-card');
+    const editar = criarElemento('button', 'Editar', 'button outline');
+    editar.type = 'button';
+    editar.addEventListener('click', function () {
+      if (!ehAdministrador()) return;
+      selecionar('#admin-special-start').value = dia;
+      selecionar('#admin-special-end').value = dia;
+      selecionar('#admin-special-price').value = (configuracaoAluguel.datas[dia] / 100).toFixed(2);
+      selecionar('#admin-special-price').focus();
+    });
+    const remover = criarElemento('button', 'Remover exceção', 'button outline');
+    remover.type = 'button';
+    remover.addEventListener('click', function () {
+      if (!ehAdministrador()) return;
+      delete configuracaoAluguel.datas[dia];
+      renderizarPrecosEspecificos();
+      exibirMensagem('admin-special-message', 'Exceção removida. A data volta a seguir as regras gerais.', true);
+    });
+    const acoes = criarElemento('div', undefined, 'actions');
+    acoes.append(editar, remover);
+    item.append(criarElemento('p', formatarData(dia) + ' · ' + formatarValor(configuracaoAluguel.datas[dia])), acoes);
+    lista.append(item);
+  });
+}
 function adicionarBloqueio(inicio, fim, motivo) {
   if (!ehAdministrador()) return 'Acesso exclusivo do administrador.';
   const erro = erroPeriodo(inicio, fim);
@@ -938,6 +1048,9 @@ selecionar('#admin-block-form').addEventListener('submit', function (evento) {
 });
 function renderizarAgendaAdmin() {
   selecionar('#admin-daily-price').value = (configuracaoAluguel.diariaCentavos / 100).toFixed(2);
+  selecionar('#admin-weekend-price').value = configuracaoAluguel.fimSemanaCentavos === null ? '' : (configuracaoAluguel.fimSemanaCentavos / 100).toFixed(2);
+  selecionar('#admin-holiday-price').value = configuracaoAluguel.feriadoCentavos === null ? '' : (configuracaoAluguel.feriadoCentavos / 100).toFixed(2);
+  renderizarPrecosEspecificos();
   const lista = selecionar('#admin-blocks');
   lista.replaceChildren();
   function linha(texto, remover) {
@@ -956,9 +1069,9 @@ function renderizarAgendaAdmin() {
   if (!lista.children.length) lista.append(criarElemento('p', 'Nenhum bloqueio manual.'));
   const ocupados = selecionar('#admin-occupied');
   ocupados.replaceChildren();
-  const ativos = alugueis.filter(function (a) { return ['pendente', 'aprovada'].includes(a.status) && a.fim >= dataISO(hojeAgenda); })
+  const ativos = alugueis.filter(function (a) { return ['pendente', 'aprovada'].includes(a.status) && deslocarDia(a.fim, 1) >= dataISO(hojeAgenda); })
     .sort(function (a, b) { return a.inicio.localeCompare(b.inicio); });
-  ativos.forEach(function (a) { ocupados.append(linkAdministrativo(textoPeriodo(a.inicio, a.fim) + ' · ' + textoStatus(a.status) + ' · ' + a.id, '#admin-pedidos/' + a.id)); });
+  ativos.forEach(function (a) { ocupados.append(linkAdministrativo(textoPeriodo(a.inicio, a.fim) + ' · Limpeza: ' + formatarData(deslocarDia(a.inicio, -1)) + ' e ' + formatarData(deslocarDia(a.fim, 1)) + ' · ' + textoStatus(a.status) + ' · ' + a.id, '#admin-pedidos/' + a.id)); });
   if (!ativos.length) ocupados.append(criarElemento('p', 'Nenhum período ocupado por solicitações.'));
 }
 function prepararAdministracao(tela) {
@@ -973,7 +1086,8 @@ function prepararAdministracao(tela) {
     renderizarAgendaAdmin();
     exibirMensagem('admin-price-message', '');
     exibirMensagem('admin-block-message', '');
-    ['admin-block-start', 'admin-block-end'].forEach(function (id) {
+    exibirMensagem('admin-special-message', '');
+    ['admin-block-start', 'admin-block-end', 'admin-special-start', 'admin-special-end'].forEach(function (id) {
       selecionar('#' + id).min = dataISO(hojeAgenda);
       selecionar('#' + id).max = dataISO(limiteAgenda);
     });
