@@ -13,11 +13,3 @@ Senha: Teste12@
 ## Conta Teste Adiministrador
 Conta administrativa: adminteste@example.com     
 Senha: Admin12@
-
-## Arquivos
-
-- `index.html`: estrutura de todas as telas, incluindo as novas telas da sprint 2.
-- `style.css`: cores, fontes, tamanhos, posicionamento e layout para celular e computador.
-- `script.js`: toda a lógica do site: navegação, cadastro, login, recuperação de senha, perfil, calendário e aluguéis. O código está dividido em blocos comentados em português.
-- `assets/`: fotografias do sítio.
-
