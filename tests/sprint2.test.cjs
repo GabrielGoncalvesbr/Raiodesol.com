@@ -341,3 +341,61 @@ test('admin edita e remove exceções, valida preços e impede alterações de c
   assert.equal(a.executar('configuracaoAluguel.fimSemanaCentavos'),70000);
   assert.equal(a.executar('configuracaoAluguel.feriadoCentavos'),90000);
 });
+
+
+test('adicionais começam na 16ª pessoa e limpeza é única mesmo com várias diárias', () => {
+  const a = ambiente();
+  a.executar('configuracaoAluguel.pessoaCentavos = 2500; configuracaoAluguel.limpezaCentavos = 15000;');
+  assert.equal(a.executar("calcularPreco('2027-03-01', '2027-03-02', 15).totalCentavos"), 100000);
+  assert.equal(a.executar("calcularPreco('2027-03-01', '2027-03-02', 16).totalCentavos"), 102500);
+  assert.equal(a.executar("calcularPreco('2027-03-01', '2027-03-02', 20, true).totalCentavos"), 127500);
+  assert.equal(a.executar("calcularPreco('2027-03-01', '2027-03-02', 20, false).limpezaCentavos"), 0);
+});
+
+test('configuração de adicionais exige administrador e valida ambos antes de salvar', () => {
+  const a = ambiente();
+  a.obter('#admin-person-price').value = '25';
+  a.obter('#admin-cleaning-price').value = '150';
+  a.acionar('admin-fees-form');
+  assert.equal(a.executar('configuracaoAluguel.pessoaCentavos'), 0);
+  a.executar("usuarioLogado = usuarios.find(u => u.papel === 'admin')");
+  a.acionar('admin-fees-form');
+  assert.equal(a.executar('configuracaoAluguel.pessoaCentavos'), 2500);
+  a.obter('#admin-person-price').value = '40';
+  a.obter('#admin-cleaning-price').value = '-1';
+  a.acionar('admin-fees-form');
+  assert.equal(a.executar('configuracaoAluguel.pessoaCentavos'), 2500);
+  a.obter('#admin-person-price').value = '0';
+  a.obter('#admin-cleaning-price').value = '0';
+  a.acionar('admin-fees-form');
+  assert.equal(a.executar('configuracaoAluguel.limpezaCentavos'), 0);
+});
+
+test('pagamento exige titular e aprovação, permite repetir falha e impede pagamento duplicado', () => {
+  const a = ambiente();
+  a.executar(`
+    usuarioLogado = usuarios[0];
+    alugueis.push({
+      id: 'RS-PAG', inicio: '2027-03-01', fim: '2027-03-01', status: 'pendente',
+      detalhes: {email: usuarioLogado.email, nome: usuarioLogado.nome, pessoas: 16},
+      preco: calcularPreco('2027-03-01', '2027-03-01', 16)
+    });
+    location.hash = '#pagamento/RS-PAG';
+  `);
+  a.obter('#payment-method').value = 'pix';
+  a.acionar('payment-form');
+  assert.equal(a.executar('alugueis[0].pagamento'), undefined);
+  a.executar("alugueis[0].status = 'aprovada'; usuarioLogado = usuarios[1]");
+  assert.equal(a.executar("prepararTela('pagamento')"), false);
+  a.executar("usuarioLogado = usuarios[0]; location.hash = '#pagamento/RS-PAG'");
+  assert.equal(a.executar("prepararTela('pagamento')"), true);
+  a.acionar('payment-failure', 'click');
+  assert.equal(a.executar('alugueis[0].pagamento'), undefined);
+  a.acionar('payment-form');
+  assert.equal(a.executar('alugueis[0].pagamento.metodo'), 'Pix');
+  a.obter('#payment-method').value = 'cartao';
+  a.acionar('payment-form');
+  assert.equal(a.executar('alugueis[0].pagamento.metodo'), 'Pix');
+  assert.equal(a.executar('notificacoes.length'), 1);
+  assert.equal(a.executar("prepararTela('pagamento-resultado')"), true);
+});

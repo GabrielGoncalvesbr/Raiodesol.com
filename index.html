@@ -418,11 +418,12 @@
         <div class="field full"><label for="rental-purpose">Tipo de encontro</label><select id="rental-purpose" required><option value="">Selecione</option><option>Encontro em família</option><option>Aniversário</option><option>Encontro com amigos</option><option>Confraternização</option><option>Outro</option></select></div>
         <div class="field full"><label for="rental-notes">Observações (opcional)</label><textarea id="rental-notes" rows="4" maxlength="1000" placeholder="Conte o que o responsável pelo sítio precisa saber."></textarea></div>
       </div>
+      <p id="rental-fees" class="helper"></p><label class="check-label"><input id="rental-cleaning" type="checkbox"><span>Contratar o serviço de limpeza. A equipe ficará responsável pela limpeza do sítio após o aluguel.</span></label>
       <p class="helper">A capacidade para seu grupo e as condições do aluguel serão confirmadas pelo responsável.</p>
       <p id="rental-message" class="form-message" role="alert" tabindex="-1"></p>
       <div class="actions"><a class="button outline" href="#disponibilidade">← Alterar datas</a><button class="button" type="submit">Revisar solicitação →</button></div>
     </form>
-    <aside class="panel booking-summary"><img class="summary-photo" src="assets/piscina.jpg" alt="Piscina do sítio"><span class="eyebrow">SÍTIO RAIO DE SOL</span><h2>Seu período</h2><p id="rental-period"></p><div class="price-note"><strong id="rental-price"></strong><p>Valores fictícios para demonstração. O preço já está definido; a reserva depende da aprovação do responsável.</p></div></aside>
+    <aside class="panel booking-summary"><img class="summary-photo" src="assets/piscina.jpg" alt="Piscina do sítio"><span class="eyebrow">SÍTIO RAIO DE SOL</span><h2>Seu período</h2><p id="rental-period"></p><div class="price-note"><strong id="rental-price"></strong><dl id="rental-costs" class="details-grid" aria-live="polite"></dl><p>Valores fictícios para demonstração. O preço já está definido; a reserva depende da aprovação do responsável.</p></div></aside>
   </div>
 </section>
 
@@ -440,7 +441,30 @@
 
 <section data-view="aluguel-detalhe" hidden>
   <div class="container page-intro"><a class="back-link" href="#perfil/alugueis">← Meus aluguéis</a><span class="eyebrow">ACOMPANHE SEU PEDIDO</span><h1>Detalhes do aluguel.</h1></div>
-  <div class="container review-layout panel"><div class="panel-heading"><h2 id="detail-title"></h2><span class="pill" id="detail-status"></span></div><dl class="details-grid" id="rental-details"></dl><div class="price-note"><strong>Preço registrado na solicitação</strong><p>A diária e o total acima são os valores apresentados antes do envio. Valores fictícios, sem pagamento nesta demonstração. A reserva depende de aprovação.</p></div><p id="detail-message" class="helper"></p><button class="button outline danger" id="cancel-rental" type="button">Cancelar solicitação</button></div>
+  <div class="container review-layout panel"><div class="panel-heading"><h2 id="detail-title"></h2><span class="pill" id="detail-status"></span></div><dl class="details-grid" id="rental-details"></dl><div class="price-note"><strong>Preço registrado na solicitação</strong><p>A diária e o total acima são os valores apresentados antes do envio. Valores fictícios, sem pagamento nesta demonstração. A reserva depende de aprovação.</p></div><p id="detail-message" class="helper"></p><a class="button" id="payment-link" href="#perfil/alugueis" hidden>Ir para pagamento</a><button class="button outline danger" id="cancel-rental" type="button">Cancelar solicitação</button></div>
+</section>
+
+<section data-view="pagamento" hidden>
+  <div class="container page-intro"><a id="payment-back" class="back-link" href="#perfil/alugueis">← Detalhes do aluguel</a><h1>Pagamento da reserva.</h1><p>Confira os valores da sua reserva aprovada.</p></div>
+  <div class="container booking-layout">
+    <div class="panel"><h2>Resumo da cobrança</h2><dl id="payment-summary" class="details-grid"></dl></div>
+    <form id="payment-form" class="panel">
+      <h2>Como deseja pagar?</h2>
+      <div class="field"><label for="payment-method">Forma de pagamento</label><select id="payment-method"><option value="pix">Pix</option><option value="cartao">Cartão de crédito</option></select></div>
+      <p id="payment-instructions" class="price-note" aria-live="polite"></p>
+      <p class="helper">Demonstração acadêmica. Nenhum valor será cobrado. Os botões permitem testar os resultados do pagamento.</p>
+      <p id="payment-message" class="form-message" role="alert" tabindex="-1"></p>
+      <div class="actions"><button class="button" type="submit">Simular pagamento aprovado</button><button id="payment-failure" class="button outline" type="button">Simular falha</button></div>
+    </form>
+  </div>
+</section>
+<section data-view="pagamento-resultado" hidden>
+  <div class="container confirmation panel">
+    <div class="success-mark" aria-hidden="true">✓</div><h1>Simulação de pagamento concluída.</h1>
+    <p>Este comprovante é demonstrativo. Nenhuma transação financeira foi realizada.</p>
+    <dl id="payment-receipt" class="details-grid"></dl>
+    <div class="actions"><a id="receipt-back" class="button" href="#perfil/alugueis">Voltar ao aluguel</a><a class="button outline" href="#perfil/alugueis">Meus aluguéis</a></div>
+  </div>
 </section>
 
 <section data-view="admin" hidden>
@@ -470,6 +494,16 @@
 <p class="helper">Prioridade: data específica → feriado nacional → sábado/domingo → diária padrão. Campos opcionais vazios não aplicam tarifa especial. Pedidos já enviados conservam os valores registrados.</p>
 <details class="holiday-info"><summary>Quais feriados entram na regra?</summary><p>1º de janeiro, Paixão de Cristo (sexta-feira antes da Páscoa), 21 de abril, 1º de maio, 7 de setembro, 12 de outubro, 2, 15 e 20 de novembro e 25 de dezembro. Carnaval, Corpus Christi, feriados estaduais e municipais não entram automaticamente. Para essas datas, use um preço específico.</p><a href="https://agenciagov.ebc.com.br/noticias/202512/confira-o-calendario-oficial-de-feriados-nacionais-e-pontos-facultativos-em-2026" target="_blank" rel="noopener noreferrer">Calendário federal de referência ↗</a></details><p id="admin-price-message" class="form-message" role="alert" tabindex="-1"></p><button class="button" type="submit">Salvar regras de preços</button></form>
     <form id="admin-block-form" class="panel"><span class="eyebrow">DISPONIBILIDADE</span><h2>Bloquear um período</h2><div class="form-grid"><div class="field"><label for="admin-block-start">Início do bloqueio</label><input id="admin-block-start" type="date" required></div><div class="field"><label for="admin-block-end">Fim do bloqueio</label><input id="admin-block-end" type="date" required></div><div class="field full"><label for="admin-block-reason">Motivo do bloqueio</label><input id="admin-block-reason" maxlength="200" required placeholder="Ex.: manutenção da piscina"></div></div><p class="helper">Primeiro e último dia são incluídos. Períodos com pedidos pendentes, aprovados ou limpeza não podem ser bloqueados manualmente. A limpeza é liberada automaticamente se o pedido for cancelado ou recusado.</p><p id="admin-block-message" class="form-message" role="alert" tabindex="-1"></p><button class="button" type="submit">Bloquear datas</button></form></div>
+    <form id="admin-fees-form" class="panel special-pricing">
+      <h2>Adicionais do aluguel</h2>
+      <p>As primeiras 15 pessoas estão incluídas nas diárias. A cobrança por pessoa começa na 16ª e é aplicada uma única vez por aluguel. O serviço de limpeza é opcional e cobrado uma vez por aluguel.</p>
+      <div class="form-grid">
+        <div class="field"><label for="admin-person-price">Valor por pessoa adicional (R$)</label><input id="admin-person-price" type="number" min="0" max="1000000" step="0.01" required></div>
+        <div class="field"><label for="admin-cleaning-price">Serviço de limpeza (R$)</label><input id="admin-cleaning-price" type="number" min="0" max="1000000" step="0.01" required></div>
+      </div>
+      <p id="admin-fees-message" class="form-message" role="alert" tabindex="-1"></p>
+      <button class="button" type="submit">Salvar adicionais</button>
+    </form>
     <form id="admin-special-price-form" class="panel special-pricing"><span class="eyebrow">EXCEÇÕES POR DATA</span><h2>Preço para dias específicos</h2><p>Para um único dia, repita a data nos dois campos. Um intervalo aplica o mesmo valor por dia, substituindo eventuais exceções anteriores.</p><div class="form-grid"><div class="field"><label for="admin-special-start">Primeiro dia com preço específico</label><input id="admin-special-start" type="date" required></div><div class="field"><label for="admin-special-end">Último dia com preço específico</label><input id="admin-special-end" type="date" required></div><div class="field full"><label for="admin-special-price">Preço por dia (R$)</label><input id="admin-special-price" type="number" min="0.01" max="1000000" step="0.01" required></div></div><p id="admin-special-message" class="form-message" role="alert" tabindex="-1"></p><button class="button" type="submit">Aplicar preço às datas</button></form>
 <h2>Datas com preço específico</h2><div id="admin-special-prices"></div><div class="heading-actions"><h2>Bloqueios manuais</h2><a class="button outline" href="#disponibilidade">Ver calendário do cliente →</a></div><div id="admin-blocks"></div>
     <h2>Períodos ocupados por pedidos</h2><div id="admin-occupied" class="customer-content"></div>
