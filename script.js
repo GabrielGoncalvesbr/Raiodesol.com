@@ -997,7 +997,8 @@ function decidirPedido(id, decisao, motivo) {
 }
 selecionar('#admin-decision-form').addEventListener('submit', function (evento) {
   evento.preventDefault();
-  const erro = decidirPedido(location.hash.split('/')[1], selecionar('#admin-decision').value, selecionar('#admin-reason').value);
+  const decisao = evento.submitter && evento.submitter.value;
+  const erro = decidirPedido(location.hash.split('/')[1], decisao, selecionar('#admin-reason').value);
   if (erro) { exibirMensagem('admin-decision-message', erro); return; }
   renderizarPedidosAdmin();
   mostrarAviso('Decisão registrada. O cliente já pode acompanhar pelo perfil.');

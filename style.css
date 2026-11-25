@@ -1364,6 +1364,14 @@ textarea { resize: vertical; }
 .cancel-dialog::backdrop { background: #132c23a6; }
 .cancel-dialog p { font-size: 14px; color: var(--muted); }
 .danger { color: #934237; border-color: #b8877e; }
+.decision-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+.decision-approve { background: var(--green); }
+.decision-reject { background: #fff; color: #934237; border: 1px solid #b8877e; }
+.decision-reject:hover { background: #fbf3f1; }
+@media (max-width: 560px) {
+  .decision-actions { flex-direction: column; }
+  .decision-actions .button { width: 100%; }
+}
 .header #navigation { gap: 18px; font-size: 12px; }
 .header #account { max-width: 145px; }
 .header #account-name { max-width: 95px; }
