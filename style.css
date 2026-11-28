@@ -9,6 +9,7 @@
   --muted:#667269;
   --line:#dee3da;
   --error:#a2332d
+  --font-site:Arial,Helvetica,sans-serif;
 }
 
 * {
@@ -23,7 +24,7 @@ body {
   margin:0;
   background:var(--cream);
   color:var(--ink);
-  font-family:Arial,Helvetica,sans-serif;
+  font-family:var(--font-site);
   font-size:15px;
   line-height:1.6
 }
@@ -234,7 +235,7 @@ nav a:not(.button):hover {
 }
 
 h1,h2 {
-  font-family:Georgia,'Times New Roman',serif;
+  font-family:var(--font-site);
   font-weight:400;
   line-height:1.1;
   letter-spacing:-1.3px
@@ -375,7 +376,7 @@ h3 {
 }
 
 .photo-card h3 {
-  font-family:Georgia,serif;
+  font-family:var(--font-site);
   font-size:23px;
   font-weight:400;
   max-width:240px;
@@ -1292,7 +1293,7 @@ main:focus {
 .customer-sidebar { text-align: center; }
 .customer-sidebar h2 { font-size: 26px; margin: 20px 0 8px; overflow-wrap: anywhere; }
 .customer-sidebar p { font-size: 12px; }
-.avatar { display: grid; place-items: center; width: 72px; height: 72px; margin: auto; border-radius: 50%; background: #f3e8cb; font-family: Georgia, serif; font-size: 32px; }
+.avatar { display: grid; place-items: center; width: 72px; height: 72px; margin: auto; border-radius: 50%; background: #f3e8cb; font-family: var(--font-site); font-size: 32px; }
 .customer-sidebar nav { display: grid; position: static; padding: 22px 0 0; margin-top: 22px; border: 0; border-top: 1px solid var(--line); gap: 8px; background: none; box-shadow: none; text-align: left; font-size: 13px; }
 .customer-sidebar nav a { padding: 10px; border-radius: 6px; }
 .customer-sidebar nav a[aria-current="page"] { background: #f3f2e9; box-shadow: none; }
@@ -1307,7 +1308,7 @@ input[readonly] { background: #eeefe9; color: #677168; cursor: default; }
 .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
 .metrics > div { padding: 24px; background: #fff; border: 1px solid var(--line); border-radius: 10px; }
 .metrics small { display: block; color: var(--muted); }
-.metrics strong { font-family: Georgia, serif; font-size: 38px; font-weight: 400; }
+.metrics strong { font-family: var(--font-site); font-size: 38px; font-weight: 400; }
 .history-toolbar { margin: 28px 0; }
 .history-toolbar p { font-size: 13px; }
 .history-toolbar select { min-width: 200px; }

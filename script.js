@@ -26,7 +26,7 @@ function fecharMenu() {
 }
 
 function mostrarTela(moverFoco = true) {
-  const telas = ['inicio', 'cadastro', 'sitio', 'login', 'recuperar', 'perfil', 'historico', 'disponibilidade', 'aluguel-dados', 'aluguel-revisao', 'aluguel-confirmacao', 'aluguel-detalhe', 'pagamento', 'pagamento-resultado', 'admin', 'admin-pedidos', 'admin-agenda'];
+  const telas = ['inicio', 'cadastro', 'sitio', 'login', 'recuperar', 'perfil', 'historico', 'disponibilidade', 'aluguel-dados', 'aluguel-revisao', 'aluguel-confirmacao', 'aluguel-detalhe', 'pagamento', 'pagamento-resultado', 'admin', 'admin-pedidos', 'admin-agenda', 'admin-adicionais', 'admin-disponibilidade'];
   let tela = location.hash.replace('#', '').split('/')[0] || 'inicio';
   // Mantém links antigos funcionando, mas o histórico agora fica dentro do perfil.
   if (tela === 'historico') { location.hash = '#perfil/alugueis'; return; }
@@ -54,7 +54,7 @@ function mostrarTela(moverFoco = true) {
     if (link.dataset.nav === tela) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   });
-  const titulos = { pagamento: 'Pagamento', 'pagamento-resultado': 'Resultado do pagamento', inicio: 'Início', cadastro: 'Criar conta', sitio: 'Conhecer o sítio', login: 'Entrar', recuperar: 'Recuperar senha', perfil: 'Meu perfil', historico: 'Meus aluguéis', disponibilidade: 'Disponibilidade', 'aluguel-dados': 'Detalhes do aluguel', 'aluguel-revisao': 'Revisar solicitação', 'aluguel-confirmacao': 'Solicitação enviada', 'aluguel-detalhe': 'Detalhes da solicitação' };
+  const titulos = { pagamento: 'Pagamento', 'pagamento-resultado': 'Resultado do pagamento', inicio: 'Início', cadastro: 'Criar conta', sitio: 'Conhecer o sítio', login: 'Entrar', recuperar: 'Recuperar senha', perfil: 'Meu perfil', historico: 'Meus aluguéis', disponibilidade: 'Disponibilidade', 'aluguel-dados': 'Detalhes do aluguel', 'aluguel-revisao': 'Revisar solicitação', 'aluguel-confirmacao': 'Solicitação enviada', 'aluguel-detalhe': 'Detalhes da solicitação', 'admin-adicionais': 'Adicionais do aluguel', 'admin-disponibilidade': 'Disponibilidade administrativa' };
   document.title = (titulos[tela] || 'Administração') + ' · Sítio Raio de Sol';
   fecharMenu();
   if (tela !== 'login') selecionar('#login-password').value = '';
@@ -262,11 +262,11 @@ let rascunhoAluguel = null;
 const alugueis = [];
 // Valor fictício em centavos, definido ANTES da solicitação.
 // A área administrativa altera a diária para novas seleções de datas.
-const configuracaoAluguel = { diariaCentavos: 50000, fimSemanaCentavos: null, feriadoCentavos: null, datas: {}, pessoaCentavos: 0, limpezaCentavos: 0 };
+const configuracaoAluguel = { diariaCentavos: 50000, fimSemanaCentavos: null, feriadoCentavos: null, datas: {}, pessoaCentavos: 0, limpezaCentavos: 0, saidaEstendidaPercentual: 0 };
 function formatarValor(centavos) {
   return (centavos / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
-function calcularPreco(inicio, fim, pessoas = 1, limpeza = false) {
+function calcularPreco(inicio, fim, pessoas = 1, limpeza = false, saidaEstendida = false) {
   const dias = [];
   for (let dia = inicio; dia <= fim; dia = deslocarDia(dia, 1)) {
     dias.push({ data: dia, ...precoDoDia(dia) });
@@ -276,15 +276,22 @@ function calcularPreco(inicio, fim, pessoas = 1, limpeza = false) {
   const pessoasExtras = Math.max(0, pessoas - 15);
   const adicionalPessoasCentavos = pessoasExtras * configuracaoAluguel.pessoaCentavos;
   const limpezaCentavos = limpeza ? configuracaoAluguel.limpezaCentavos : 0;
+  const ultimoDia = dias[dias.length - 1];
+  const saidaEstendidaPercentual = saidaEstendida ? configuracaoAluguel.saidaEstendidaPercentual : 0;
+  const saidaEstendidaCentavos = saidaEstendida && ultimoDia
+    ? Math.round(ultimoDia.centavos * saidaEstendidaPercentual / 100)
+    : 0;
   return {
     subtotalCentavos: subtotalCentavos,
     pessoasExtras: pessoasExtras,
     valorPessoaCentavos: configuracaoAluguel.pessoaCentavos,
     adicionalPessoasCentavos: adicionalPessoasCentavos,
     limpezaCentavos: limpezaCentavos,
+    saidaEstendidaPercentual: saidaEstendidaPercentual,
+    saidaEstendidaCentavos: saidaEstendidaCentavos,
     diariaCentavos: diariaUnica && dias.length ? dias[0].centavos : null,
     dias: dias,
-    totalCentavos: subtotalCentavos + adicionalPessoasCentavos + limpezaCentavos
+    totalCentavos: subtotalCentavos + adicionalPessoasCentavos + limpezaCentavos + saidaEstendidaCentavos
   };
 }
 function textoPreco(preco) {
@@ -675,6 +682,9 @@ function preencherFormularioAluguel() {
   selecionar('#rental-phone').value = detalhes ? detalhes.telefone : usuarioLogado.telefone;
   selecionar('#rental-guests').value = detalhes ? detalhes.pessoas : '';
   selecionar('#rental-cleaning').checked = Boolean(detalhes && detalhes.limpeza);
+  selecionar('#rental-extended-exit').checked = Boolean(detalhes && detalhes.saidaEstendida);
+  selecionar('#rental-extended-exit-time').value = detalhes ? detalhes.horarioSaidaEstendida || '' : '';
+  selecionar('#extended-exit-time-field').hidden = !selecionar('#rental-extended-exit').checked;
   selecionar('#rental-purpose').value = detalhes ? detalhes.tipo : '';
   selecionar('#rental-notes').value = detalhes ? detalhes.observacoes : '';
   selecionar('#rental-period').textContent = textoPeriodo(rascunhoAluguel.inicio, rascunhoAluguel.fim);
@@ -683,25 +693,42 @@ function preencherFormularioAluguel() {
 function atualizarAdicionais() {
   if (!rascunhoAluguel) return;
   const pessoas = Number(selecionar('#rental-guests').value);
-  selecionar('#rental-fees').textContent = 'Até 15 pessoas incluídas. A partir da 16ª: ' + formatarValor(configuracaoAluguel.pessoaCentavos) + ' por pessoa, uma vez por aluguel. Limpeza opcional: ' + formatarValor(configuracaoAluguel.limpezaCentavos) + ' por aluguel.';
+  selecionar('#rental-fees').textContent = 'Até 15 pessoas incluídas. A partir da 16ª: ' + formatarValor(configuracaoAluguel.pessoaCentavos) + ' por pessoa, uma vez por aluguel. Limpeza opcional: ' + formatarValor(configuracaoAluguel.limpezaCentavos) + ' por aluguel. Saída estendida: ' + configuracaoAluguel.saidaEstendidaPercentual + '% da diária do último dia.';
   if (!Number.isSafeInteger(pessoas) || pessoas < 1) {
     selecionar('#rental-costs').replaceChildren();
     selecionar('#rental-price').textContent = 'Informe a quantidade de pessoas para calcular o total.';
     return;
   }
-  rascunhoAluguel.preco = calcularPreco(rascunhoAluguel.inicio, rascunhoAluguel.fim, pessoas, selecionar('#rental-cleaning').checked);
+  rascunhoAluguel.preco = calcularPreco(rascunhoAluguel.inicio, rascunhoAluguel.fim, pessoas, selecionar('#rental-cleaning').checked, selecionar('#rental-extended-exit').checked);
   selecionar('#rental-price').textContent = textoPreco(rascunhoAluguel.preco);
   preencherDetalhes('rental-costs', [
     ['Diárias', formatarValor(rascunhoAluguel.preco.subtotalCentavos)],
     ['Pessoas adicionais (' + rascunhoAluguel.preco.pessoasExtras + ')', formatarValor(rascunhoAluguel.preco.adicionalPessoasCentavos)],
-    ['Limpeza opcional', formatarValor(rascunhoAluguel.preco.limpezaCentavos)]
+    ['Limpeza opcional', formatarValor(rascunhoAluguel.preco.limpezaCentavos)],
+    ['Saída estendida (' + rascunhoAluguel.preco.saidaEstendidaPercentual + '% da última diária)', formatarValor(rascunhoAluguel.preco.saidaEstendidaCentavos)]
   ]);
 }
 selecionar('#rental-guests').addEventListener('input', atualizarAdicionais);
-selecionar('#rental-cleaning').addEventListener('change', atualizarAdicionais);
+selecionar('#rental-cleaning').addEventListener('change', function () {
+  if (this.checked && !window.confirm('Ao contratar a limpeza, a equipe do Sítio Raio de Sol ficará responsável pela limpeza do local após o aluguel. Deseja continuar?')) {
+    this.checked = false;
+  }
+  atualizarAdicionais();
+});
+selecionar('#rental-extended-exit').addEventListener('change', function () {
+  if (this.checked && !window.confirm('A saída estendida permite permanecer até as 10h do dia seguinte ao término do aluguel. Após esse horário, será cobrada uma diária adicional. Deseja solicitar a saída estendida?')) {
+    this.checked = false;
+  }
+  const solicitado = this.checked;
+  selecionar('#extended-exit-time-field').hidden = !solicitado;
+  selecionar('#rental-extended-exit-time').required = solicitado;
+  if (!solicitado) selecionar('#rental-extended-exit-time').value = '';
+  atualizarAdicionais();
+});
 selecionar('#rental-form').addEventListener('submit', function (evento) {
   evento.preventDefault();
   if (!usuarioLogado || !rascunhoAluguel) { location.hash = '#disponibilidade'; return; }
+  if (!selecionar('#rental-cleaning').checked && !window.confirm('Sem contratar a taxa de limpeza, você será totalmente responsável por entregar o sítio nas mesmas condições em que o recebeu. Deseja continuar sem o serviço de limpeza?')) return;
   const telefone = selecionar('#rental-phone').value.replace(/\D/g, '');
   const pessoas = Number(selecionar('#rental-guests').value);
   if (!/^[1-9]{2}\d{8,9}$/.test(telefone)) {
@@ -712,11 +739,18 @@ selecionar('#rental-form').addEventListener('submit', function (evento) {
     exibirMensagem('rental-message', 'Informe uma quantidade inteira de pessoas, a partir de 1.');
     return;
   }
+  const saidaEstendida = selecionar('#rental-extended-exit').checked;
+  const horarioSaidaEstendida = selecionar('#rental-extended-exit-time').value;
+  if (saidaEstendida && !horarioSaidaEstendida) {
+    exibirMensagem('rental-message', 'Informe o horário desejado para a saída estendida.');
+    return;
+  }
   const erro = erroPeriodo(rascunhoAluguel.inicio, rascunhoAluguel.fim);
   if (erro) { exibirMensagem('rental-message', erro); return; }
   rascunhoAluguel.detalhes = {
     nome: usuarioLogado.nome, email: usuarioLogado.email, telefone: telefone,
     limpeza: selecionar('#rental-cleaning').checked,
+    saidaEstendida: saidaEstendida, horarioSaidaEstendida: horarioSaidaEstendida,
     pessoas: pessoas, tipo: selecionar('#rental-purpose').value,
     observacoes: selecionar('#rental-notes').value.trim()
   };
@@ -731,6 +765,7 @@ function paresAluguel(aluguel) {
     ['Diárias do período', detalharDiarias(aluguel.preco)],
     ['Adicional por pessoas', formatarValor(aluguel.preco.adicionalPessoasCentavos || 0) + ' (' + (aluguel.preco.pessoasExtras || 0) + ' pessoas adicionais)'],
     ['Serviço de limpeza', aluguel.detalhes.limpeza ? formatarValor(aluguel.preco.limpezaCentavos || 0) : 'Cliente responsável pela limpeza'],
+    ['Saída estendida', aluguel.detalhes.saidaEstendida ? 'Solicitada para ' + aluguel.detalhes.horarioSaidaEstendida + ' · ' + aluguel.preco.saidaEstendidaPercentual + '% da diária (' + formatarValor(aluguel.preco.saidaEstendidaCentavos) + ') · aguardando confirmação' : 'Não solicitada'],
     ['Pagamento', aluguel.pagamento ? 'Simulação concluída · ' + aluguel.pagamento.metodo : 'Aguardando pagamento após aprovação'],
     ['Total do período', formatarValor(aluguel.preco.totalCentavos)],
     ['Dias bloqueados para limpeza', formatarData(deslocarDia(aluguel.inicio, -1)) + ' e ' + formatarData(deslocarDia(aluguel.fim, 1))],
@@ -1091,6 +1126,7 @@ function renderizarAgendaAdmin() {
   selecionar('#admin-holiday-price').value = configuracaoAluguel.feriadoCentavos === null ? '' : (configuracaoAluguel.feriadoCentavos / 100).toFixed(2);
   selecionar('#admin-person-price').value = (configuracaoAluguel.pessoaCentavos / 100).toFixed(2);
   selecionar('#admin-cleaning-price').value = (configuracaoAluguel.limpezaCentavos / 100).toFixed(2);
+  selecionar('#admin-extended-exit-percent').value = configuracaoAluguel.saidaEstendidaPercentual.toFixed(2);
   renderizarPrecosEspecificos();
   const lista = selecionar('#admin-blocks');
   lista.replaceChildren();
@@ -1123,7 +1159,7 @@ function prepararAdministracao(tela) {
   });
   if (tela === 'admin') renderizarPainelAdmin();
   if (tela === 'admin-pedidos') renderizarPedidosAdmin();
-  if (tela === 'admin-agenda') {
+  if (['admin-agenda', 'admin-adicionais', 'admin-disponibilidade'].includes(tela)) {
     renderizarAgendaAdmin();
     exibirMensagem('admin-price-message', '');
     exibirMensagem('admin-block-message', '');
@@ -1146,8 +1182,14 @@ selecionar('#admin-fees-form').addEventListener('submit', function (evento) {
     exibirMensagem('admin-fees-message', 'Informe valores de zero a R$ 1.000.000,00 com até duas casas decimais.');
     return;
   }
+  const percentualSaida = Number(selecionar('#admin-extended-exit-percent').value);
+  if (!Number.isFinite(percentualSaida) || percentualSaida < 0 || percentualSaida > 1000) {
+    exibirMensagem('admin-fees-message', 'Informe uma porcentagem entre 0% e 1.000%.');
+    return;
+  }
   configuracaoAluguel.pessoaCentavos = valores[0];
   configuracaoAluguel.limpezaCentavos = valores[1];
+  configuracaoAluguel.saidaEstendidaPercentual = percentualSaida;
   exibirMensagem('admin-fees-message', 'Adicionais salvos para as próximas solicitações.', true);
 });
 
